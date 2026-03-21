@@ -1,5 +1,5 @@
 import { getDb } from './db'
-import { queryOllama } from './ollama'
+import { queryAI } from './ai-client'
 import { buildReportInsightsPrompt, SYSTEM_FINANCIAL_ADVISOR } from './ai-prompts'
 import { getWeekStart, getWeekEnd, getMonthStart, getMonthEnd } from './utils'
 import type { WeeklyReportData, MonthlyReportData } from './types'
@@ -13,7 +13,7 @@ export async function generateWeeklyReport(dateInWeek?: string): Promise<number>
 
   let aiInsights: string | null = null
   try {
-    aiInsights = await queryOllama(
+    aiInsights = await queryAI(
       buildReportInsightsPrompt({
         type: 'weekly',
         period: `${start} to ${end}`,
@@ -76,7 +76,7 @@ export async function generateMonthlyReport(month?: string): Promise<number> {
 
   let aiInsights: string | null = null
   try {
-    aiInsights = await queryOllama(
+    aiInsights = await queryAI(
       buildReportInsightsPrompt({
         type: 'monthly',
         period: `${start} to ${end}`,

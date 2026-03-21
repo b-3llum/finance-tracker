@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
-import { queryOllama } from '@/lib/ollama'
+import { queryAI } from '@/lib/ai-client'
 import { buildOptimizationPrompt, SYSTEM_FINANCIAL_ADVISOR } from '@/lib/ai-prompts'
 import { getMonthStart, getMonthEnd } from '@/lib/utils'
 
@@ -41,7 +41,7 @@ export async function POST() {
       month,
     })
 
-    const response = await queryOllama(prompt, SYSTEM_FINANCIAL_ADVISOR)
+    const response = await queryAI(prompt, SYSTEM_FINANCIAL_ADVISOR)
 
     // Try to parse JSON from response
     let parsed

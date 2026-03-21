@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
-import { queryOllama } from '@/lib/ollama'
+import { queryAI } from '@/lib/ai-client'
 import { buildProfilePrompt, SYSTEM_FINANCIAL_ADVISOR } from '@/lib/ai-prompts'
 
 export async function GET() {
@@ -79,7 +79,7 @@ export async function POST() {
       one_time_expenses: oneTime.total,
     })
 
-    const response = await queryOllama(prompt, SYSTEM_FINANCIAL_ADVISOR)
+    const response = await queryAI(prompt, SYSTEM_FINANCIAL_ADVISOR)
 
     let profileData
     try {

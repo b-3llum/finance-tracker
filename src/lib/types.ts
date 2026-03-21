@@ -118,11 +118,18 @@ export interface OptimizationSuggestion {
   advice: string
 }
 
+export type AIProvider = 'ollama' | 'claude' | 'openai'
+
 export interface Settings {
   currency: string
   currency_symbol: string
+  ai_provider: AIProvider
   ollama_url: string
   ollama_model: string
+  claude_api_key: string
+  claude_model: string
+  openai_api_key: string
+  openai_model: string
   notifications_enabled: boolean
   theme: 'system' | 'light' | 'dark'
 }

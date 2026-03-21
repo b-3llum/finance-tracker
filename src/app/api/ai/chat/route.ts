@@ -1,5 +1,5 @@
 import { getDb } from '@/lib/db'
-import { streamOllama } from '@/lib/ollama'
+import { streamAI } from '@/lib/ai-client'
 import { buildChatPrompt, SYSTEM_FINANCIAL_ADVISOR } from '@/lib/ai-prompts'
 import { getMonthStart, getMonthEnd } from '@/lib/utils'
 
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       savings_goals: goals,
     })
 
-    const stream = await streamOllama(prompt, SYSTEM_FINANCIAL_ADVISOR)
+    const stream = streamAI(prompt, SYSTEM_FINANCIAL_ADVISOR)
 
     return new Response(stream, {
       headers: { 'Content-Type': 'text/plain; charset=utf-8' },
