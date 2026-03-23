@@ -94,9 +94,8 @@ export async function authenticateUser(email: string, password: string): Promise
   return { id: user.id, email: user.email, name: user.name }
 }
 
-export function getSessionCookie(token: string, host?: string): string {
-  const isLocalhost = host?.startsWith('localhost') || host?.startsWith('127.0.0.1')
-  const secure = process.env.NODE_ENV === 'production' && !isLocalhost ? '; Secure' : ''
+export function getSessionCookie(token: string): string {
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
   return `auth_token=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${7 * 24 * 60 * 60}${secure}`
 }
 

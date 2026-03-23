@@ -27,15 +27,13 @@ export async function POST(request: Request) {
     const user = await createUser(email, password, name)
     const token = await createSession(user.id)
 
-    const host = request.headers.get('host') || ''
-    const isLocalhost = host.startsWith('localhost') || host.startsWith('127.0.0.1')
     const response = NextResponse.json({ user, token }, { status: 201 })
     response.cookies.set('auth_token', token, {
       httpOnly: true,
       sameSite: 'lax',
       path: '/',
       maxAge: 7 * 24 * 60 * 60,
-      secure: process.env.NODE_ENV === 'production' && !isLocalhost,
+      secure: process.env.NODE_ENV === 'production',
     })
     return response
   } catch (error: any) {

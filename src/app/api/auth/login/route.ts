@@ -23,14 +23,12 @@ export async function POST(request: Request) {
   const token = await createSession(user.id)
 
   const response = NextResponse.json({ user, token })
-  const host = request.headers.get('host') || ''
-  const isLocalhost = host.startsWith('localhost') || host.startsWith('127.0.0.1')
   response.cookies.set('auth_token', token, {
     httpOnly: true,
     sameSite: 'lax',
     path: '/',
     maxAge: 7 * 24 * 60 * 60,
-    secure: process.env.NODE_ENV === 'production' && !isLocalhost,
+    secure: process.env.NODE_ENV === 'production',
   })
   return response
 }
