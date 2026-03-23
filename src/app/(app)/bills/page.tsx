@@ -29,7 +29,7 @@ export default function BillsPage() {
 
   const expenseCategories = categories?.filter(c => c.type === 'expense') || []
   const overdue = bills?.filter(b => b.is_overdue) || []
-  const upcoming = bills?.filter(b => !b.is_overdue && b.days_until_due !== null && b.days_until_due <= 7) || []
+  const upcoming = bills?.filter(b => !b.is_overdue && b.days_until_due != null && b.days_until_due <= 7) || []
   const totalMonthly = bills?.filter(b => b.status === 'active').reduce((sum, b) => sum + b.amount, 0) || 0
   const totalYearly = totalMonthly * 12
 
