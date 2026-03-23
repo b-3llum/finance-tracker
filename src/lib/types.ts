@@ -118,6 +118,68 @@ export interface OptimizationSuggestion {
   advice: string
 }
 
+export interface Bill {
+  id: number
+  user_id: number
+  name: string
+  amount: number
+  due_day: number
+  category_id: number | null
+  frequency: 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'yearly'
+  auto_pay: number
+  reminder_days: number
+  status: 'active' | 'paused'
+  last_paid_date: string | null
+  next_due_date: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+  category_name?: string
+  category_color?: string
+  days_until_due?: number
+  is_overdue?: boolean
+}
+
+export interface Debt {
+  id: number
+  user_id: number
+  name: string
+  type: 'credit_card' | 'student_loan' | 'mortgage' | 'auto_loan' | 'personal_loan' | 'medical' | 'other'
+  original_balance: number
+  current_balance: number
+  interest_rate: number
+  minimum_payment: number
+  due_day: number | null
+  status: 'active' | 'paid_off'
+  created_at: string
+  updated_at: string
+  total_paid?: number
+}
+
+export interface DebtPayment {
+  id: number
+  debt_id: number
+  amount: number
+  date: string
+  note: string | null
+}
+
+export interface NetWorthData {
+  total_assets: number
+  total_liabilities: number
+  net_worth: number
+  accounts: { name: string; balance: number }[]
+  debts: { name: string; balance: number; type: string }[]
+  savings: { name: string; current: number }[]
+}
+
+export interface ForecastData {
+  dates: string[]
+  projected_balance: number[]
+  income_events: { date: string; amount: number; label: string }[]
+  expense_events: { date: string; amount: number; label: string }[]
+}
+
 export type AIProvider = 'ollama' | 'claude' | 'openai'
 
 export interface Settings {

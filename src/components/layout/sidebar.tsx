@@ -14,6 +14,11 @@ import {
   Menu,
   X,
   LogOut,
+  Receipt,
+  CreditCard,
+  TrendingUp,
+  Upload,
+  DollarSign,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
@@ -23,8 +28,13 @@ import { ThemeToggle } from '@/components/theme-toggle'
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
+  { href: '/bills', label: 'Bills', icon: Receipt },
   { href: '/budget', label: 'Budget', icon: PieChart },
+  { href: '/debts', label: 'Debts', icon: CreditCard },
   { href: '/savings', label: 'Savings', icon: Target },
+  { href: '/net-worth', label: 'Net Worth', icon: DollarSign },
+  { href: '/forecast', label: 'Forecast', icon: TrendingUp },
+  { href: '/import', label: 'Import', icon: Upload },
   { href: '/reports', label: 'Reports', icon: FileText },
   { href: '/insights', label: 'AI Insights', icon: Brain },
   { href: '/settings', label: 'Settings', icon: Settings },
@@ -67,7 +77,7 @@ export function Sidebar() {
           </div>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {navItems.map((item, i) => {
             const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
             return (

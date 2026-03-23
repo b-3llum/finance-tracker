@@ -77,3 +77,49 @@
 @utility animate-slide-in-left {
   animation: slide-in-left 0.2s ease-out;
 }
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes progress-fill {
+  from { width: 0%; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@utility animate-count-up {
+  animation: count-up 0.4s ease-out;
+}
+
+@utility animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+@utility animate-scale-in {
+  animation: scale-in 0.3s ease-out;
+}
+
+@utility animate-progress-fill {
+  animation: progress-fill 0.8s ease-out;
+}
+
+@utility stagger-1 { animation-delay: 50ms; }
+@utility stagger-2 { animation-delay: 100ms; }
+@utility stagger-3 { animation-delay: 150ms; }
+@utility stagger-4 { animation-delay: 200ms; }
+@utility stagger-5 { animation-delay: 250ms; }
