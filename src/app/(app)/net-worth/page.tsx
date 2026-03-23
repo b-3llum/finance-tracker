@@ -78,7 +78,7 @@ export default function NetWorthPage() {
                       <Cell key={i} fill={entry.color} stroke="none" />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => formatCurrency(value, sym)} />
+                  <Tooltip formatter={(value) => formatCurrency(Number(value), sym)} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="space-y-2 mt-2">
