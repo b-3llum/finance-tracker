@@ -11,7 +11,7 @@ A personal financial tracker web app with AI-powered insights, running locally o
 - **Charts** - Balance trend line chart, spending breakdown donut chart
 - **AI Insights** (Ollama) - Spending optimization, 60-day profile builder, financial chat assistant
 - **Reports** - Auto-generated weekly (Sunday) and monthly reports with AI narrative
-- **Dark/Light Mode** - Follows system preference
+- **Dark/Light Mode** - Toggle between light, dark, or system preference
 - **Configurable Currency** - USD, EUR, GBP, and more
 
 ## Tech Stack
@@ -24,31 +24,81 @@ A personal financial tracker web app with AI-powered insights, running locally o
 - **Ollama** (local LLM for AI features)
 - **node-cron** for scheduled reports
 
-## Prerequisites
+## Quick Start (Docker)
+
+The fastest way to run FinTrack. Only requires Docker — no Node.js, no dependencies to install.
+
+### Install Docker (if you don't have it)
+
+**Linux (Ubuntu/Debian):**
+```bash
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
+**Mac:**
+```bash
+brew install --cask docker
+open /Applications/Docker.app
+```
+
+### Run FinTrack
+
+```bash
+git clone https://github.com/b-3llum/finance-tracker.git
+cd finance-tracker
+docker compose up --build -d
+```
+
+Open **http://localhost:3000** — that's it. Register an account and start tracking.
+
+Your data is stored in a Docker volume and persists across restarts and rebuilds.
+
+### Stop / Restart
+
+```bash
+docker compose down      # stop
+docker compose up -d     # start again (data is preserved)
+```
+
+### Optional: Enable AI Features
+
+To use AI insights, run [Ollama](https://ollama.ai) on your host machine:
+
+```bash
+# Install Ollama (Linux)
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull llama3
+
+# Then update docker-compose.yml — uncomment OLLAMA_BASE_URL:
+# Linux: http://172.17.0.1:11434
+# Mac:   http://host.docker.internal:11434
+```
+
+Or uncomment the Ollama service in `docker-compose.yml` to run it inside Docker too.
+
+---
+
+## Manual Setup (without Docker)
+
+### Prerequisites
 
 - Node.js 22+ with npm
 - [Ollama](https://ollama.ai) installed and running (for AI features)
 - Pull a model: `ollama pull llama3`
 
-## Setup
+### Install and Run
 
 ```bash
-# Clone the repo
 git clone https://github.com/b-3llum/finance-tracker.git
 cd finance-tracker
-
-# Install dependencies
 npm install
-
-# Create env file
 cp .env.local.example .env.local
-# Edit OLLAMA_BASE_URL if needed (default: http://localhost:11434)
-
-# Run development server
 npm run dev
-
-# Open http://localhost:3000
 ```
+
+Open **http://localhost:3000**
 
 ## First Steps
 
