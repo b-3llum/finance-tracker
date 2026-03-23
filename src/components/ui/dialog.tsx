@@ -16,7 +16,7 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
     <div className="fixed inset-0 z-50">
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onOpenChange(false)} />
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <div className="relative bg-background rounded-xl border shadow-lg w-full max-w-lg max-h-[85vh] overflow-y-auto">
+        <div className="relative bg-background rounded-2xl border shadow-lg w-full max-w-lg max-h-[85vh] overflow-y-auto animate-fade-in">
           {children}
         </div>
       </div>
@@ -25,7 +25,7 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
 }
 
 function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex flex-col space-y-1.5 p-6 pb-0', className)} {...props} />
+  return <div className={cn('flex flex-col space-y-1.5 p-7 pb-0', className)} {...props} />
 }
 
 function DialogTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
@@ -33,7 +33,7 @@ function DialogTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingEl
 }
 
 function DialogContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('p-6', className)} {...props} />
+  return <div className={cn('p-7', className)} {...props} />
 }
 
 function DialogClose({ onClose }: { onClose: () => void }) {

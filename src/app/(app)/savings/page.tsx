@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress'
 import { Dialog, DialogHeader, DialogTitle, DialogContent, DialogClose } from '@/components/ui/dialog'
 import { formatCurrency, daysUntil } from '@/lib/utils'
 import { Plus, Target, Trash2, DollarSign, Calendar } from 'lucide-react'
+import { useToast } from '@/components/ui/toast'
 import type { SavingsGoal } from '@/lib/types'
 
 export default function SavingsPage() {
@@ -22,6 +23,7 @@ export default function SavingsPage() {
   const [contribNote, setContribNote] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
+  const { toast } = useToast()
   const sym = settings?.currency_symbol || '$'
 
   async function handleAddGoal(e: React.FormEvent) {
@@ -38,7 +40,7 @@ export default function SavingsPage() {
       setShowAdd(false)
       refetch()
     } catch (e: any) {
-      alert(e.message)
+      toast.error(e.message)
     } finally {
       setSubmitting(false)
     }
@@ -58,7 +60,7 @@ export default function SavingsPage() {
       setShowContribute(null)
       refetch()
     } catch (e: any) {
-      alert(e.message)
+      toast.error(e.message)
     } finally {
       setSubmitting(false)
     }
@@ -70,12 +72,12 @@ export default function SavingsPage() {
       await apiDelete(`/api/savings/${id}`)
       refetch()
     } catch (e: any) {
-      alert(e.message)
+      toast.error(e.message)
     }
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Savings Goals</h1>

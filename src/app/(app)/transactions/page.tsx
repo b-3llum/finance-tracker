@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogHeader, DialogTitle, DialogContent, DialogClose } from '@/components/ui/dialog'
 import { formatCurrency, formatDate, getToday } from '@/lib/utils'
 import { Plus, Trash2, ArrowUpRight, ArrowDownRight, Filter } from 'lucide-react'
+import { useToast } from '@/components/ui/toast'
 import type { Category, TransactionWithCategory } from '@/lib/types'
 
 export default function TransactionsPage() {
@@ -32,6 +33,7 @@ export default function TransactionsPage() {
   const { data: categories } = useApi<Category[]>('/api/categories')
   const { data: settings } = useApi<Record<string, string>>('/api/settings')
 
+  const { toast } = useToast()
   const sym = settings?.currency_symbol || '$'
 
   // Add transaction form state
@@ -62,7 +64,7 @@ export default function TransactionsPage() {
       setShowAdd(false)
       refetch()
     } catch (e: any) {
-      alert(e.message)
+      toast.error(e.message)
     } finally {
       setSubmitting(false)
     }
@@ -74,12 +76,12 @@ export default function TransactionsPage() {
       await apiDelete(`/api/transactions/${id}`)
       refetch()
     } catch (e: any) {
-      alert(e.message)
+      toast.error(e.message)
     }
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Transactions</h1>

@@ -1,15 +1,15 @@
 import { getSetting } from './db'
 import type { AIProvider } from './types'
 
-function getProvider(): AIProvider {
-  return (getSetting('ai_provider') as AIProvider) || 'ollama'
+function getProvider(userId?: number): AIProvider {
+  return (getSetting('ai_provider', userId) as AIProvider) || 'ollama'
 }
 
 // ── Ollama ──────────────────────────────────────────────
 
-async function queryOllamaProvider(prompt: string, system: string): Promise<string> {
-  const url = getSetting('ollama_url') || 'http://localhost:11434'
-  const model = getSetting('ollama_model') || 'llama3'
+async function queryOllamaProvider(prompt: string, system: string, userId?: number): Promise<string> {
+  const url = getSetting('ollama_url', userId) || 'http://localhost:11434'
+  const model = getSetting('ollama_model', userId) || 'llama3'
 
   const response = await fetch(`${url}/api/chat`, {
     method: 'POST',
@@ -29,9 +29,9 @@ async function queryOllamaProvider(prompt: string, system: string): Promise<stri
   return data.message.content
 }
 
-function streamOllamaProvider(prompt: string, system: string): ReadableStream<Uint8Array> {
-  const url = getSetting('ollama_url') || 'http://localhost:11434'
-  const model = getSetting('ollama_model') || 'llama3'
+function streamOllamaProvider(prompt: string, system: string, userId?: number): ReadableStream<Uint8Array> {
+  const url = getSetting('ollama_url', userId) || 'http://localhost:11434'
+  const model = getSetting('ollama_model', userId) || 'llama3'
 
   return new ReadableStream({
     async start(controller) {
@@ -83,13 +83,13 @@ function streamOllamaProvider(prompt: string, system: string): ReadableStream<Ui
 
 // ── Claude (Anthropic) ──────────────────────────────────
 
-async function queryClaudeProvider(prompt: string, system: string): Promise<string> {
+async function queryClaudeProvider(prompt: string, system: string, userId?: number): Promise<string> {
   const Anthropic = (await import('@anthropic-ai/sdk')).default
-  const apiKey = getSetting('claude_api_key')
+  const apiKey = getSetting('claude_api_key', userId)
   if (!apiKey) throw new Error('Claude API key not configured. Go to Settings to add it.')
 
   const client = new Anthropic({ apiKey })
-  const model = getSetting('claude_model') || 'claude-sonnet-4-6'
+  const model = getSetting('claude_model', userId) || 'claude-sonnet-4-6'
 
   const message = await client.messages.create({
     model,
@@ -102,12 +102,12 @@ async function queryClaudeProvider(prompt: string, system: string): Promise<stri
   return textBlock ? (textBlock as any).text : ''
 }
 
-function streamClaudeProvider(prompt: string, system: string): ReadableStream<Uint8Array> {
+function streamClaudeProvider(prompt: string, system: string, userId?: number): ReadableStream<Uint8Array> {
   return new ReadableStream({
     async start(controller) {
       try {
         const Anthropic = (await import('@anthropic-ai/sdk')).default
-        const apiKey = getSetting('claude_api_key')
+        const apiKey = getSetting('claude_api_key', userId)
         if (!apiKey) {
           controller.enqueue(new TextEncoder().encode('Error: Claude API key not configured. Go to Settings.'))
           controller.close()
@@ -115,7 +115,7 @@ function streamClaudeProvider(prompt: string, system: string): ReadableStream<Ui
         }
 
         const client = new Anthropic({ apiKey })
-        const model = getSetting('claude_model') || 'claude-sonnet-4-6'
+        const model = getSetting('claude_model', userId) || 'claude-sonnet-4-6'
 
         const stream = client.messages.stream({
           model,
@@ -140,13 +140,13 @@ function streamClaudeProvider(prompt: string, system: string): ReadableStream<Ui
 
 // ── OpenAI ──────────────────────────────────────────────
 
-async function queryOpenAIProvider(prompt: string, system: string): Promise<string> {
+async function queryOpenAIProvider(prompt: string, system: string, userId?: number): Promise<string> {
   const OpenAI = (await import('openai')).default
-  const apiKey = getSetting('openai_api_key')
+  const apiKey = getSetting('openai_api_key', userId)
   if (!apiKey) throw new Error('OpenAI API key not configured. Go to Settings to add it.')
 
   const client = new OpenAI({ apiKey })
-  const model = getSetting('openai_model') || 'gpt-4o'
+  const model = getSetting('openai_model', userId) || 'gpt-4o'
 
   const completion = await client.chat.completions.create({
     model,
@@ -161,12 +161,12 @@ async function queryOpenAIProvider(prompt: string, system: string): Promise<stri
   return completion.choices[0]?.message?.content || ''
 }
 
-function streamOpenAIProvider(prompt: string, system: string): ReadableStream<Uint8Array> {
+function streamOpenAIProvider(prompt: string, system: string, userId?: number): ReadableStream<Uint8Array> {
   return new ReadableStream({
     async start(controller) {
       try {
         const OpenAI = (await import('openai')).default
-        const apiKey = getSetting('openai_api_key')
+        const apiKey = getSetting('openai_api_key', userId)
         if (!apiKey) {
           controller.enqueue(new TextEncoder().encode('Error: OpenAI API key not configured. Go to Settings.'))
           controller.close()
@@ -174,7 +174,7 @@ function streamOpenAIProvider(prompt: string, system: string): ReadableStream<Ui
         }
 
         const client = new OpenAI({ apiKey })
-        const model = getSetting('openai_model') || 'gpt-4o'
+        const model = getSetting('openai_model', userId) || 'gpt-4o'
 
         const stream = await client.chat.completions.create({
           model,
@@ -204,37 +204,37 @@ function streamOpenAIProvider(prompt: string, system: string): ReadableStream<Ui
 
 // ── Public API ──────────────────────────────────────────
 
-export async function queryAI(prompt: string, system: string): Promise<string> {
-  const provider = getProvider()
+export async function queryAI(prompt: string, system: string, userId?: number): Promise<string> {
+  const provider = getProvider(userId)
   switch (provider) {
     case 'claude':
-      return queryClaudeProvider(prompt, system)
+      return queryClaudeProvider(prompt, system, userId)
     case 'openai':
-      return queryOpenAIProvider(prompt, system)
+      return queryOpenAIProvider(prompt, system, userId)
     case 'ollama':
     default:
-      return queryOllamaProvider(prompt, system)
+      return queryOllamaProvider(prompt, system, userId)
   }
 }
 
-export function streamAI(prompt: string, system: string): ReadableStream<Uint8Array> {
-  const provider = getProvider()
+export function streamAI(prompt: string, system: string, userId?: number): ReadableStream<Uint8Array> {
+  const provider = getProvider(userId)
   switch (provider) {
     case 'claude':
-      return streamClaudeProvider(prompt, system)
+      return streamClaudeProvider(prompt, system, userId)
     case 'openai':
-      return streamOpenAIProvider(prompt, system)
+      return streamOpenAIProvider(prompt, system, userId)
     case 'ollama':
     default:
-      return streamOllamaProvider(prompt, system)
+      return streamOllamaProvider(prompt, system, userId)
   }
 }
 
-export async function checkAIStatus(): Promise<{ available: boolean; provider: string; detail: string }> {
-  const provider = getProvider()
+export async function checkAIStatus(userId?: number): Promise<{ available: boolean; provider: string; detail: string }> {
+  const provider = getProvider(userId)
 
   if (provider === 'ollama') {
-    const url = getSetting('ollama_url') || 'http://localhost:11434'
+    const url = getSetting('ollama_url', userId) || 'http://localhost:11434'
     try {
       const response = await fetch(`${url}/api/tags`)
       if (!response.ok) return { available: false, provider, detail: 'Ollama not responding' }
@@ -247,15 +247,15 @@ export async function checkAIStatus(): Promise<{ available: boolean; provider: s
   }
 
   if (provider === 'claude') {
-    const key = getSetting('claude_api_key')
+    const key = getSetting('claude_api_key', userId)
     if (!key) return { available: false, provider, detail: 'API key not set' }
-    return { available: true, provider, detail: `Model: ${getSetting('claude_model') || 'claude-sonnet-4-6'}` }
+    return { available: true, provider, detail: `Model: ${getSetting('claude_model', userId) || 'claude-sonnet-4-6'}` }
   }
 
   if (provider === 'openai') {
-    const key = getSetting('openai_api_key')
+    const key = getSetting('openai_api_key', userId)
     if (!key) return { available: false, provider, detail: 'API key not set' }
-    return { available: true, provider, detail: `Model: ${getSetting('openai_model') || 'gpt-4o'}` }
+    return { available: true, provider, detail: `Model: ${getSetting('openai_model', userId) || 'gpt-4o'}` }
   }
 
   return { available: false, provider, detail: 'Unknown provider' }

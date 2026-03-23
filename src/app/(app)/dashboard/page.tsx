@@ -59,7 +59,7 @@ export default function DashboardPage() {
   const totalSaved = activeGoals.reduce((s: number, g: any) => s + g.current_amount, 0)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground">Your financial overview</p>

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
+import { useToast } from '@/components/ui/toast'
 import { Save, CheckCircle, XCircle, RefreshCw, Brain, Key, Eye, EyeOff } from 'lucide-react'
 
 const CURRENCIES = [
@@ -47,6 +48,7 @@ export default function SettingsPage() {
   const [balanceSaving, setBalanceSaving] = useState(false)
   const [showClaudeKey, setShowClaudeKey] = useState(false)
   const [showOpenAIKey, setShowOpenAIKey] = useState(false)
+  const { toast } = useToast()
 
   useEffect(() => {
     if (settings) {
@@ -72,7 +74,7 @@ export default function SettingsPage() {
       setTimeout(() => setSaved(false), 2000)
       refetch()
     } catch (e: any) {
-      alert(e.message)
+      toast.error(e.message)
     } finally {
       setSaving(false)
     }
@@ -100,9 +102,9 @@ export default function SettingsPage() {
     try {
       await apiPut('/api/accounts', { current_balance: parseFloat(balanceInput) })
       setBalanceInput('')
-      alert('Balance updated successfully!')
+      toast.success('Balance updated successfully!')
     } catch (e: any) {
-      alert(e.message)
+      toast.error(e.message)
     } finally {
       setBalanceSaving(false)
     }
@@ -116,7 +118,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold">Settings</h1>
         <p className="text-muted-foreground">Configure your financial tracker</p>

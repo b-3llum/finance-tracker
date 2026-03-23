@@ -18,6 +18,7 @@ import {
   Bot,
   TrendingUp,
 } from 'lucide-react'
+import { useToast } from '@/components/ui/toast'
 import type { SpendingProfile } from '@/lib/types'
 
 export default function InsightsPage() {
@@ -33,6 +34,7 @@ export default function InsightsPage() {
   const [chatLoading, setChatLoading] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
 
+  const { toast } = useToast()
   const sym = settings?.currency_symbol || '$'
 
   const profile: SpendingProfile | null = profileData?.profile_data
@@ -47,7 +49,7 @@ export default function InsightsPage() {
       await apiPost('/api/ai/profile', {})
       refetchProfile()
     } catch (e: any) {
-      alert(e.message)
+      toast.error(e.message)
     } finally {
       setGenerating(false)
     }
@@ -59,7 +61,7 @@ export default function InsightsPage() {
       const result = await apiPost('/api/ai/optimize', {})
       setOptimization(result)
     } catch (e: any) {
-      alert(e.message)
+      toast.error(e.message)
     } finally {
       setOptimizing(false)
     }
@@ -112,7 +114,7 @@ export default function InsightsPage() {
   }, [messages])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold">AI Insights</h1>
         <p className="text-muted-foreground">Powered by Ollama (llama3)</p>

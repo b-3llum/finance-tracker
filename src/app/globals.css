@@ -1,45 +1,45 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: oklch(1 0 0);
-  --color-foreground: oklch(0.145 0 0);
+  --color-background: oklch(0.98 0.002 260);
+  --color-foreground: oklch(0.13 0.02 260);
   --color-card: oklch(1 0 0);
-  --color-card-foreground: oklch(0.145 0 0);
-  --color-primary: oklch(0.55 0.2 260);
+  --color-card-foreground: oklch(0.13 0.02 260);
+  --color-primary: oklch(0.5 0.22 265);
   --color-primary-foreground: oklch(0.985 0 0);
   --color-secondary: oklch(0.96 0.005 260);
   --color-secondary-foreground: oklch(0.205 0.015 260);
-  --color-muted: oklch(0.96 0.005 260);
-  --color-muted-foreground: oklch(0.55 0.015 260);
-  --color-accent: oklch(0.96 0.005 260);
+  --color-muted: oklch(0.955 0.005 260);
+  --color-muted-foreground: oklch(0.45 0.015 260);
+  --color-accent: oklch(0.955 0.005 260);
   --color-accent-foreground: oklch(0.205 0.015 260);
   --color-destructive: oklch(0.577 0.245 27.325);
   --color-destructive-foreground: oklch(0.985 0 0);
-  --color-border: oklch(0.915 0.005 260);
-  --color-input: oklch(0.915 0.005 260);
-  --color-ring: oklch(0.55 0.2 260);
-  --radius: 0.625rem;
+  --color-border: oklch(0.925 0.005 260);
+  --color-input: oklch(0.925 0.005 260);
+  --color-ring: oklch(0.5 0.22 265);
+  --radius: 0.75rem;
 }
 
 @media (prefers-color-scheme: dark) {
   @theme {
-    --color-background: oklch(0.13 0.01 260);
-    --color-foreground: oklch(0.985 0 0);
-    --color-card: oklch(0.17 0.015 260);
-    --color-card-foreground: oklch(0.985 0 0);
-    --color-primary: oklch(0.65 0.2 260);
-    --color-primary-foreground: oklch(0.13 0.01 260);
-    --color-secondary: oklch(0.22 0.02 260);
-    --color-secondary-foreground: oklch(0.985 0 0);
-    --color-muted: oklch(0.22 0.02 260);
-    --color-muted-foreground: oklch(0.65 0.01 260);
-    --color-accent: oklch(0.22 0.02 260);
-    --color-accent-foreground: oklch(0.985 0 0);
+    --color-background: oklch(0.13 0.008 270);
+    --color-foreground: oklch(0.96 0 0);
+    --color-card: oklch(0.17 0.012 270);
+    --color-card-foreground: oklch(0.96 0 0);
+    --color-primary: oklch(0.65 0.2 265);
+    --color-primary-foreground: oklch(0.13 0.008 270);
+    --color-secondary: oklch(0.22 0.018 270);
+    --color-secondary-foreground: oklch(0.96 0 0);
+    --color-muted: oklch(0.22 0.018 270);
+    --color-muted-foreground: oklch(0.6 0.01 270);
+    --color-accent: oklch(0.22 0.018 270);
+    --color-accent-foreground: oklch(0.96 0 0);
     --color-destructive: oklch(0.577 0.245 27.325);
     --color-destructive-foreground: oklch(0.985 0 0);
-    --color-border: oklch(0.28 0.02 260);
-    --color-input: oklch(0.28 0.02 260);
-    --color-ring: oklch(0.65 0.2 260);
+    --color-border: oklch(0.28 0.018 270);
+    --color-input: oklch(0.28 0.018 270);
+    --color-ring: oklch(0.65 0.2 265);
   }
 }
 
@@ -48,7 +48,33 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
-    font-family: system-ui, -apple-system, sans-serif;
+    @apply bg-background text-foreground antialiased;
   }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@utility animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+@utility animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+@utility animate-slide-in-left {
+  animation: slide-in-left 0.2s ease-out;
 }

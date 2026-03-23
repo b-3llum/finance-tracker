@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { FileText, RefreshCw, Brain, TrendingUp, TrendingDown } from 'lucide-react'
+import { useToast } from '@/components/ui/toast'
 import type { Report, WeeklyReportData, MonthlyReportData } from '@/lib/types'
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
@@ -25,6 +26,7 @@ export default function ReportsPage() {
   const [generating, setGenerating] = useState('')
   const [viewReport, setViewReport] = useState<Report | null>(null)
 
+  const { toast } = useToast()
   const sym = settings?.currency_symbol || '$'
 
   async function generateReport(type: 'weekly' | 'monthly') {
@@ -34,7 +36,7 @@ export default function ReportsPage() {
       refetch()
       setViewReport(report)
     } catch (e: any) {
-      alert(e.message)
+      toast.error(e.message)
     } finally {
       setGenerating('')
     }
@@ -46,7 +48,7 @@ export default function ReportsPage() {
       const report = await res.json()
       setViewReport(report)
     } catch (e: any) {
-      alert(e.message)
+      toast.error(e.message)
     }
   }
 
@@ -54,7 +56,7 @@ export default function ReportsPage() {
   const monthlyData = viewReport?.type === 'monthly' ? reportData as MonthlyReportData | null : null
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold">Reports</h1>
         <p className="text-muted-foreground">Weekly and monthly financial summaries</p>

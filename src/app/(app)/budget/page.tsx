@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { Dialog, DialogHeader, DialogTitle, DialogContent, DialogClose } from '@/components/ui/dialog'
 import { formatCurrency } from '@/lib/utils'
+import { useToast } from '@/components/ui/toast'
 import { Pencil } from 'lucide-react'
 
 interface BudgetCategory {
@@ -32,6 +33,7 @@ interface BudgetResponse {
 export default function BudgetPage() {
   const { data: budget, refetch } = useApi<BudgetResponse>('/api/budget')
   const { data: settings } = useApi<Record<string, string>>('/api/settings')
+  const { toast } = useToast()
   const [editing, setEditing] = useState<BudgetCategory | null>(null)
   const [budgetAmount, setBudgetAmount] = useState('')
 
@@ -46,7 +48,7 @@ export default function BudgetPage() {
       setEditing(null)
       refetch()
     } catch (e: any) {
-      alert(e.message)
+      toast.error(e.message)
     }
   }
 
@@ -57,7 +59,7 @@ export default function BudgetPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold">Budget</h1>
         <p className="text-muted-foreground">

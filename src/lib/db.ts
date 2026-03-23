@@ -1,9 +1,12 @@
 import Database from 'better-sqlite3'
 import path from 'path'
 import fs from 'fs'
+import { encrypt, decrypt, isEncrypted } from './crypto'
 
 const DB_PATH = path.join(process.cwd(), 'data', 'finance.db')
 const MIGRATIONS_PATH = path.join(process.cwd(), 'migrations')
+
+const SENSITIVE_KEYS = ['claude_api_key', 'openai_api_key']
 
 let db: Database.Database | null = null
 
@@ -49,20 +52,32 @@ function runMigrations(database: Database.Database) {
   }
 }
 
-export function getSetting(key: string): string | null {
-  const row = getDb().prepare('SELECT value FROM settings WHERE key = ?').get(key) as { value: string } | undefined
-  return row?.value ?? null
+export function getSetting(key: string, userId?: number): string | null {
+  const uid = userId ?? 1
+  const row = getDb().prepare('SELECT value FROM settings WHERE key = ? AND user_id = ?').get(key, uid) as { value: string } | undefined
+  if (!row) return null
+  if (SENSITIVE_KEYS.includes(key) && isEncrypted(row.value)) {
+    return decrypt(row.value)
+  }
+  return row.value
 }
 
-export function setSetting(key: string, value: string): void {
-  getDb().prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run(key, value)
+export function setSetting(key: string, value: string, userId?: number): void {
+  const uid = userId ?? 1
+  const storedValue = SENSITIVE_KEYS.includes(key) && value ? encrypt(value) : value
+  getDb().prepare('INSERT OR REPLACE INTO settings (user_id, key, value) VALUES (?, ?, ?)').run(uid, key, storedValue)
 }
 
-export function getAllSettings(): Record<string, string> {
-  const rows = getDb().prepare('SELECT key, value FROM settings').all() as { key: string; value: string }[]
+export function getAllSettings(userId?: number): Record<string, string> {
+  const uid = userId ?? 1
+  const rows = getDb().prepare('SELECT key, value FROM settings WHERE user_id = ?').all(uid) as { key: string; value: string }[]
   const settings: Record<string, string> = {}
   for (const row of rows) {
-    settings[row.key] = row.value
+    if (SENSITIVE_KEYS.includes(row.key) && isEncrypted(row.value)) {
+      settings[row.key] = decrypt(row.value)
+    } else {
+      settings[row.key] = row.value
+    }
   }
   return settings
 }
