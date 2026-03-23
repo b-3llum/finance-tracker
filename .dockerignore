@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.gitignore
+data
+*.db
+.env.local
+.env
+.claude
+ARCHITECTURE.md
+README.md

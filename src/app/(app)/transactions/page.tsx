@@ -95,26 +95,29 @@ export default function TransactionsPage() {
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-wrap gap-3 items-center">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <Select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="w-36">
+          <div className="flex items-center gap-3 mb-3">
+            <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="text-sm font-medium text-muted-foreground">Filters</span>
+            {(typeFilter || categoryFilter || dateFrom || dateTo) && (
+              <Button variant="ghost" size="sm" className="ml-auto" onClick={() => { setTypeFilter(''); setCategoryFilter(''); setDateFrom(''); setDateTo('') }}>
+                Clear
+              </Button>
+            )}
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <Select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
               <option value="">All types</option>
               <option value="income">Income</option>
               <option value="expense">Expense</option>
             </Select>
-            <Select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="w-44">
+            <Select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
               <option value="">All categories</option>
               {categories?.map(c => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </Select>
-            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-40" placeholder="From" />
-            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-40" placeholder="To" />
-            {(typeFilter || categoryFilter || dateFrom || dateTo) && (
-              <Button variant="ghost" size="sm" onClick={() => { setTypeFilter(''); setCategoryFilter(''); setDateFrom(''); setDateTo('') }}>
-                Clear
-              </Button>
-            )}
+            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} placeholder="From" />
+            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} placeholder="To" />
           </div>
         </CardContent>
       </Card>

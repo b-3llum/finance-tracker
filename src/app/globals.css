@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-background: oklch(0.98 0.002 260);
   --color-foreground: oklch(0.13 0.02 260);
@@ -21,8 +23,14 @@
   --radius: 0.75rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  @theme {
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  .dark {
     --color-background: oklch(0.13 0.008 270);
     --color-foreground: oklch(0.96 0 0);
     --color-card: oklch(0.17 0.012 270);
@@ -40,15 +48,6 @@
     --color-border: oklch(0.28 0.018 270);
     --color-input: oklch(0.28 0.018 270);
     --color-ring: oklch(0.65 0.2 265);
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground antialiased;
   }
 }
 

@@ -18,6 +18,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -91,6 +92,8 @@ export function Sidebar() {
             )
           })}
         </nav>
+
+        <ThemeToggle />
 
         {/* User section */}
         {user && (
