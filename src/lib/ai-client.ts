@@ -8,7 +8,7 @@ function getProvider(userId?: number): AIProvider {
 // ── Ollama ──────────────────────────────────────────────
 
 async function queryOllamaProvider(prompt: string, system: string, userId?: number): Promise<string> {
-  const url = getSetting('ollama_url', userId) || 'http://localhost:11434'
+  const url = getSetting('ollama_url', userId) || process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
   const model = getSetting('ollama_model', userId) || 'llama3'
 
   const response = await fetch(`${url}/api/chat`, {
@@ -30,7 +30,7 @@ async function queryOllamaProvider(prompt: string, system: string, userId?: numb
 }
 
 function streamOllamaProvider(prompt: string, system: string, userId?: number): ReadableStream<Uint8Array> {
-  const url = getSetting('ollama_url', userId) || 'http://localhost:11434'
+  const url = getSetting('ollama_url', userId) || process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
   const model = getSetting('ollama_model', userId) || 'llama3'
 
   return new ReadableStream({
@@ -234,7 +234,7 @@ export async function checkAIStatus(userId?: number): Promise<{ available: boole
   const provider = getProvider(userId)
 
   if (provider === 'ollama') {
-    const url = getSetting('ollama_url', userId) || 'http://localhost:11434'
+    const url = getSetting('ollama_url', userId) || process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
     try {
       const response = await fetch(`${url}/api/tags`)
       if (!response.ok) return { available: false, provider, detail: 'Ollama not responding' }

@@ -66,7 +66,7 @@ export async function createUser(email: string, password: string, name?: string)
     ['currency', 'USD'],
     ['currency_symbol', '$'],
     ['ai_provider', 'ollama'],
-    ['ollama_url', 'http://localhost:11434'],
+    ['ollama_url', process.env.OLLAMA_BASE_URL || 'http://localhost:11434'],
     ['ollama_model', 'llama3'],
     ['claude_api_key', ''],
     ['claude_model', 'claude-sonnet-4-6'],

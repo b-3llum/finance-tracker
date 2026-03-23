@@ -1,7 +1,7 @@
 import { getSetting } from './db'
 
 function getOllamaUrl(): string {
-  return getSetting('ollama_url') || 'http://localhost:11434'
+  return getSetting('ollama_url') || process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
 }
 
 function getOllamaModel(): string {
