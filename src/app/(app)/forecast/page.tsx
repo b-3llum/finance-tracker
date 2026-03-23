@@ -137,7 +137,7 @@ export default function ForecastPage() {
                 <XAxis dataKey="date" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
                 <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={v => v >= 1000 || v <= -1000 ? `${sym}${(v/1000).toFixed(0)}k` : `${sym}${v}`} />
                 <Tooltip
-                  formatter={(value: number) => [formatCurrency(value, sym), 'Balance']}
+                  formatter={(value) => [formatCurrency(Number(value), sym), 'Balance']}
                   contentStyle={{ borderRadius: '12px', border: '1px solid var(--color-border)', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
                 />
                 {goesNegative && <ReferenceLine y={0} stroke="#ef4444" strokeDasharray="4 4" strokeWidth={1.5} />}
