@@ -51,7 +51,7 @@ cd finance-tracker
 docker compose up --build -d
 ```
 
-Open **https://localhost:3000** — that's it. Register an account and start tracking.
+Open **https://localhost** — that's it. Register an account and start tracking.
 
 Your data is stored in a Docker volume and persists across restarts and rebuilds.
 
