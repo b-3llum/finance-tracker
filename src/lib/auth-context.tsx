@@ -41,6 +41,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
+  // Navigate with fallback for Safari/PWA where router.push may silently fail
+  const navigate = useCallback((path: string) => {
+    router.push(path)
+    setTimeout(() => {
+      if (window.location.pathname !== path) {
+        window.location.href = path
+      }
+    }, 1000)
+  }, [router])
+
   useEffect(() => {
     fetch('/api/auth/me', { headers: authHeaders(), credentials: 'include' })
       .then(res => res.ok ? res.json() : null)
@@ -61,10 +71,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Store token in localStorage for iOS Safari / PWA where cookies may not persist
     if (data.token) localStorage.setItem('auth_token', data.token)
     setUser(data.user)
-    await new Promise(resolve => setTimeout(resolve, 100))
-    window.location.href = '/dashboard'
+    navigate('/dashboard')
     return null
-  }, [])
+  }, [navigate])
 
   const register = useCallback(async (email: string, password: string, name?: string): Promise<string | null> => {
     const res = await fetch('/api/auth/register', {
@@ -77,17 +86,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!res.ok) return data.error || 'Registration failed'
     if (data.token) localStorage.setItem('auth_token', data.token)
     setUser(data.user)
-    await new Promise(resolve => setTimeout(resolve, 100))
-    window.location.href = '/dashboard'
+    navigate('/dashboard')
     return null
-  }, [])
+  }, [navigate])
 
   const logout = useCallback(async () => {
     await fetch('/api/auth/logout', { method: 'POST', headers: authHeaders(), credentials: 'include' })
     localStorage.removeItem('auth_token')
     setUser(null)
-    window.location.href = '/login'
-  }, [])
+    navigate('/login')
+  }, [navigate])
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout }}>
