@@ -1,34 +1,67 @@
-# FinTrack - Personal Finance Tracker
+<p align="center">
+  <img src="public/banner.svg" alt="FinTrack Banner" width="100%"/>
+</p>
 
-A personal financial tracker web app with AI-powered insights, running locally on your machine.
+<p align="center">
+  <strong>A self-hosted personal finance tracker with AI-powered insights, end-to-end encryption, and HTTPS by default.</strong>
+</p>
+
+<p align="center">
+  <a href="#quick-start-docker"><img src="https://img.shields.io/badge/Docker-One_Command_Setup-2496ED?logo=docker&logoColor=white" alt="Docker"/></a>
+  <a href="#https-setup"><img src="https://img.shields.io/badge/HTTPS-mkcert-22c55e?logo=letsencrypt&logoColor=white" alt="HTTPS"/></a>
+  <a href="#ai-features"><img src="https://img.shields.io/badge/AI-Ollama_%7C_Claude_%7C_OpenAI-a855f7?logo=openai&logoColor=white" alt="AI"/></a>
+</p>
+
+---
 
 ## Features
 
-- **Balance Tracking** - Set and track your account balance over time
-- **Transactions** - Log income and expenses with categories, filters, and recurring transaction support
-- **Budget Management** - Set monthly budgets per category with visual progress bars
-- **Savings Goals** - Create goals with deadlines, track contributions, see required daily/weekly savings rate
-- **Charts** - Balance trend line chart, spending breakdown donut chart
-- **AI Insights** (Ollama) - Spending optimization, 60-day profile builder, financial chat assistant
-- **Reports** - Auto-generated weekly (Sunday) and monthly reports with AI narrative
-- **Dark/Light Mode** - Toggle between light, dark, or system preference
-- **Configurable Currency** - USD, EUR, GBP, and more
+- **Balance Tracking** — Monitor account balances over time with trend charts
+- **Transactions** — Log income and expenses with categories, filters, and recurring support
+- **Budget Management** — Set monthly budgets per category with visual progress bars
+- **Savings Goals** — Create goals with deadlines, track contributions, see required daily/weekly rates
+- **Debt Tracking** — Track debts, interest rates, and payment schedules
+- **Net Worth** — Aggregate view of assets vs liabilities over time
+- **Financial Forecasting** — Project future balances based on spending patterns
+- **Charts** — Balance trend line chart, spending breakdown donut chart (Recharts)
+- **AI Insights** — Spending optimization, 60-day profile builder, financial chat assistant
+- **Reports** — Auto-generated weekly and monthly reports with AI narrative
+- **Data Import** — Import transactions from CSV/bank exports
+- **Dark/Light Mode** — Toggle between light, dark, or system preference
+- **Configurable Currency** — USD, EUR, GBP, and more
+- **HTTPS by Default** — Locally-trusted TLS via mkcert + Nginx reverse proxy
+- **Multi-User** — Individual accounts with isolated data
+- **PWA** — Installable as a progressive web app with offline caching
 
 ## Tech Stack
 
-- **Next.js 15** (App Router + Turbopack)
-- **TypeScript**
-- **Tailwind CSS 4**
-- **SQLite** (via better-sqlite3)
-- **Recharts** for data visualization
-- **Ollama** (local LLM for AI features)
-- **node-cron** for scheduled reports
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, Next.js 16 (App Router), Tailwind CSS 4 |
+| Charts | Recharts |
+| Icons | Lucide React |
+| Database | SQLite (better-sqlite3) |
+| Auth | bcryptjs + jose (JWT, HS256, 7-day expiry) |
+| Encryption | AES-256-GCM (node:crypto) |
+| AI | Multi-provider — Ollama (local), Claude, OpenAI |
+| Scheduling | node-cron |
+| TLS | Nginx + mkcert (locally-trusted certs) |
+| Container | Docker + Docker Compose |
+| PWA | Service Worker + Web App Manifest |
+
+---
 
 ## Quick Start (Docker)
 
-The fastest way to run FinTrack. Only requires Docker — no Node.js, no dependencies to install.
+The fastest way to run FinTrack. Only requires Docker — no Node.js or dependencies to install.
 
-### Install Docker (if you don't have it)
+### 1. Install Docker (if you don't have it)
+
+**Mac:**
+```bash
+brew install --cask docker
+open /Applications/Docker.app
+```
 
 **Linux (Ubuntu/Debian):**
 ```bash
@@ -37,13 +70,7 @@ sudo usermod -aG docker $USER
 newgrp docker
 ```
 
-**Mac:**
-```bash
-brew install --cask docker
-open /Applications/Docker.app
-```
-
-### Run FinTrack
+### 2. Clone and Run
 
 ```bash
 git clone https://github.com/b-3llum/finance-tracker.git
@@ -51,32 +78,48 @@ cd finance-tracker
 docker compose up --build -d
 ```
 
-Open **https://localhost** — that's it. Register an account and start tracking.
+The app is now running on **http://localhost:3000** (HTTP). Register an account and start tracking.
 
 Your data is stored in a Docker volume and persists across restarts and rebuilds.
 
-### Stop / Restart
+---
 
+## HTTPS Setup
+
+For encrypted traffic (recommended), set up locally-trusted HTTPS with mkcert. This gives you a green padlock on `https://localhost` with zero browser warnings — works in Chrome, Safari, Firefox, and Edge.
+
+### 1. Install mkcert
+
+**Mac:**
 ```bash
-docker compose down      # stop
-docker compose up -d     # start again (data is preserved)
+brew install mkcert
 ```
 
-### Optional: Enable AI Features
-
-To use AI insights, run [Ollama](https://ollama.ai) on your host machine:
-
+**Linux:**
 ```bash
-# Install Ollama (Linux)
-curl -fsSL https://ollama.com/install.sh | sh
-ollama pull llama3
-
-# Then update docker-compose.yml — uncomment OLLAMA_BASE_URL:
-# Linux: http://172.17.0.1:11434
-# Mac:   http://host.docker.internal:11434
+sudo apt install libnss3-tools
+curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"
+chmod +x mkcert-v*-linux-amd64
+sudo mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert
 ```
 
-Or uncomment the Ollama service in `docker-compose.yml` to run it inside Docker too.
+### 2. Generate Certs and Start
+
+```bash
+./setup-https.sh
+docker compose up -d --build
+```
+
+Open **https://localhost** — that's it. Port 80 redirects to HTTPS automatically.
+
+### How It Works
+
+```
+Browser ──HTTPS──▶ Nginx (port 443) ──HTTP──▶ Next.js (port 3000, internal)
+                   TLS termination            App container (not exposed)
+```
+
+Nginx handles TLS termination using the certs generated by mkcert. The Next.js app runs on an internal Docker network and is never directly exposed.
 
 ---
 
@@ -85,8 +128,7 @@ Or uncomment the Ollama service in `docker-compose.yml` to run it inside Docker 
 ### Prerequisites
 
 - Node.js 22+ with npm
-- [Ollama](https://ollama.ai) installed and running (for AI features)
-- Pull a model: `ollama pull llama3`
+- (Optional) [Ollama](https://ollama.ai) for AI features: `ollama pull llama3`
 
 ### Install and Run
 
@@ -100,42 +142,138 @@ npm run dev
 
 Open **http://localhost:3000**
 
-## First Steps
+---
 
-1. Go to **Settings** and set your current account balance
-2. Choose your currency
-3. Test your Ollama connection
-4. Start adding transactions
-5. Set category budgets in the **Budget** page
-6. Create savings goals in **Savings**
+## Managing the App
+
+```bash
+docker compose down          # stop
+docker compose up -d         # start (data preserved)
+docker compose up -d --build # rebuild after code changes
+docker compose logs -f       # view logs
+```
+
+### Persistent Secrets
+
+By default, `JWT_SECRET` and `ENCRYPTION_KEY` are auto-generated on each container start. This means sessions invalidate on restart. To keep sessions across rebuilds, set them explicitly in `docker-compose.yml`:
+
+```yaml
+environment:
+  - JWT_SECRET=your-secret-here
+  - ENCRYPTION_KEY=your-encryption-key-here
+```
+
+Generate a strong secret: `openssl rand -base64 32`
+
+---
+
+## AI Features
+
+All AI features work with multiple providers. Set your provider in **Settings**.
+
+| Feature | Description |
+|---|---|
+| **Spending Profile** | After 14+ days of data, generates a personality profile with habits analysis |
+| **Spending Optimization** | Analyzes current month and suggests specific cuts |
+| **Financial Chat** | Ask questions about your finances with streaming responses |
+| **Report Insights** | AI-written narrative summaries in weekly/monthly reports |
+| **Anomaly Detection** | Flags unusual spending patterns |
+| **Subscription Detection** | Identifies recurring charges from transaction history |
+
+### Enable Ollama (Local AI)
+
+```bash
+# Install Ollama
+curl -fsSL https://ollama.com/install.sh | sh  # Linux
+brew install ollama                              # Mac
+
+# Pull a model
+ollama pull llama3
+
+# Update docker-compose.yml — uncomment OLLAMA_BASE_URL:
+# Linux: http://172.17.0.1:11434
+# Mac:   http://host.docker.internal:11434
+```
+
+Or uncomment the Ollama service in `docker-compose.yml` to run it inside Docker.
+
+### Cloud AI Providers
+
+In **Settings**, enter API keys for Claude (Anthropic) or OpenAI to use cloud models instead.
+
+---
 
 ## Scheduled Reports
 
 The app automatically generates:
-- **Weekly Report** - Every Sunday at 8:00 AM
-- **Monthly Report** - 1st of each month at 8:00 AM
 
-Reports include AI-generated insights when Ollama is available. Desktop notifications via `notify-send` on Linux.
+- **Weekly Report** — Every Sunday at 8:00 AM
+- **Monthly Report** — 1st of each month at 8:00 AM
 
-You can also generate reports manually from the Reports page.
+Reports include AI-generated insights when a provider is configured. You can also generate reports manually from the Reports page.
 
-## AI Features
+---
 
-All AI features require Ollama running locally:
+## First Steps
 
-- **Spending Profile** - After 14+ days of data, generates a personality profile with good/bad habits
-- **Spending Optimization** - Analyzes current month and suggests specific cuts
-- **Financial Chat** - Ask questions about your finances with streaming responses
-- **Report Insights** - AI-written narrative summaries in weekly/monthly reports
+1. Register an account at `/register`
+2. Go to **Settings** — set your current balance and currency
+3. (Optional) Configure an AI provider
+4. Start adding transactions
+5. Set category budgets on the **Budget** page
+6. Create savings goals in **Savings**
+
+---
 
 ## Project Structure
 
 ```
-src/
-├── app/           # Next.js pages and API routes
-├── components/    # UI components (shadcn-style)
-├── hooks/         # React data-fetching hooks
-└── lib/           # Database, Ollama client, utilities
-migrations/        # SQL migration files
-data/              # SQLite database (gitignored)
+finance-tracker/
+├── src/
+│   ├── app/
+│   │   ├── (auth)/             # Login and register pages
+│   │   ├── (app)/              # Authenticated app pages
+│   │   │   ├── dashboard/      # Main dashboard with charts
+│   │   │   ├── transactions/   # Transaction management
+│   │   │   ├── budget/         # Budget tracking per category
+│   │   │   ├── savings/        # Savings goals
+│   │   │   ├── debts/          # Debt tracking
+│   │   │   ├── bills/          # Bill reminders
+│   │   │   ├── net-worth/      # Net worth over time
+│   │   │   ├── forecast/       # Financial forecasting
+│   │   │   ├── reports/        # Generated reports
+│   │   │   ├── insights/       # AI insights dashboard
+│   │   │   ├── import/         # CSV data import
+│   │   │   └── settings/       # App and AI configuration
+│   │   └── api/
+│   │       ├── auth/           # Login, register, logout, session
+│   │       ├── ai/             # Chat, optimize, profile, anomalies
+│   │       ├── transactions/   # CRUD + filters
+│   │       ├── bills/          # Recurring bills
+│   │       ├── savings/        # Goals + contributions
+│   │       ├── debts/          # Debts + payments
+│   │       ├── budget/         # Budget analysis
+│   │       ├── categories/     # Category management
+│   │       ├── accounts/       # Account management
+│   │       ├── balance/        # Balance history
+│   │       ├── net-worth/      # Net worth snapshots
+│   │       ├── forecast/       # Forecast projections
+│   │       ├── reports/        # Report generation
+│   │       ├── import/         # CSV import processing
+│   │       └── settings/       # User settings
+│   ├── components/             # UI components (shadcn-style)
+│   ├── hooks/                  # useApi data-fetching hook
+│   └── lib/                    # Auth, DB, AI client, crypto, utils
+├── migrations/                 # SQL migration files (auto-run)
+├── nginx/                      # Nginx TLS reverse proxy config
+├── setup-https.sh              # One-command HTTPS cert setup
+├── docker-compose.yml          # Docker orchestration
+├── Dockerfile                  # Multi-stage production build
+└── docker-entrypoint.sh        # Secret generation + app start
 ```
+
+---
+
+## License
+
+MIT

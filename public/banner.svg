@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="50%" style="stop-color:#1e293b"/>
+      <stop offset="100%" style="stop-color:#0f172a"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22c55e"/>
+      <stop offset="100%" style="stop-color:#10b981"/>
+    </linearGradient>
+    <linearGradient id="chart" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22c55e;stop-opacity:0.6"/>
+      <stop offset="100%" style="stop-color:#10b981;stop-opacity:0.1"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <clipPath id="chartClip">
+      <rect x="600" y="40" width="560" height="220" rx="8"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="300" fill="url(#bg)"/>
+
+  <!-- Subtle grid -->
+  <g opacity="0.04" stroke="#94a3b8" stroke-width="0.5">
+    <line x1="0" y1="60" x2="1200" y2="60"/>
+    <line x1="0" y1="120" x2="1200" y2="120"/>
+    <line x1="0" y1="180" x2="1200" y2="180"/>
+    <line x1="0" y1="240" x2="1200" y2="240"/>
+    <line x1="200" y1="0" x2="200" y2="300"/>
+    <line x1="400" y1="0" x2="400" y2="300"/>
+    <line x1="600" y1="0" x2="600" y2="300"/>
+    <line x1="800" y1="0" x2="800" y2="300"/>
+    <line x1="1000" y1="0" x2="1000" y2="300"/>
+  </g>
+
+  <!-- Decorative chart area (right side) -->
+  <g clip-path="url(#chartClip)" opacity="0.5">
+    <!-- Area fill under the chart line -->
+    <path d="M620 200 L680 180 L740 190 L800 150 L860 160 L920 120 L980 100 L1040 110 L1100 70 L1140 80 L1140 240 L620 240 Z" fill="url(#chart)"/>
+    <!-- Chart line -->
+    <path d="M620 200 L680 180 L740 190 L800 150 L860 160 L920 120 L980 100 L1040 110 L1100 70 L1140 80" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+    <!-- Data points -->
+    <circle cx="620" cy="200" r="3" fill="#22c55e"/>
+    <circle cx="740" cy="190" r="3" fill="#22c55e"/>
+    <circle cx="860" cy="160" r="3" fill="#22c55e"/>
+    <circle cx="980" cy="100" r="3" fill="#22c55e"/>
+    <circle cx="1100" cy="70" r="3.5" fill="#22c55e" filter="url(#glow)"/>
+  </g>
+
+  <!-- Decorative donut chart (top right) -->
+  <g transform="translate(680, 90)" opacity="0.3">
+    <circle cx="0" cy="0" r="30" fill="none" stroke="#22c55e" stroke-width="8" stroke-dasharray="50 138.5" stroke-dashoffset="0"/>
+    <circle cx="0" cy="0" r="30" fill="none" stroke="#3b82f6" stroke-width="8" stroke-dasharray="35 153.5" stroke-dashoffset="-50"/>
+    <circle cx="0" cy="0" r="30" fill="none" stroke="#f59e0b" stroke-width="8" stroke-dasharray="25 163.5" stroke-dashoffset="-85"/>
+    <circle cx="0" cy="0" r="30" fill="none" stroke="#ef4444" stroke-width="8" stroke-dasharray="20 168.5" stroke-dashoffset="-110"/>
+  </g>
+
+  <!-- Icon: wallet/shield -->
+  <g transform="translate(60, 100)">
+    <rect x="0" y="0" width="56" height="56" rx="14" fill="#22c55e" opacity="0.15"/>
+    <g transform="translate(12, 12)" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Dollar sign icon -->
+      <line x1="16" y1="2" x2="16" y2="30"/>
+      <path d="M24 8 C24 5 20 4 16 4 C12 4 8 5 8 8 C8 14 24 11 24 18 C24 22 20 24 16 24 C12 24 8 22 8 18"/>
+    </g>
+  </g>
+
+  <!-- App name -->
+  <text x="136" y="122" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="48" font-weight="800" letter-spacing="-1.5">
+    <tspan fill="#f8fafc">Fin</tspan><tspan fill="#22c55e">Track</tspan>
+  </text>
+
+  <!-- Tagline -->
+  <text x="138" y="155" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#94a3b8" letter-spacing="0.5">
+    Personal finance tracker with AI-powered insights
+  </text>
+
+  <!-- Badge row -->
+  <g transform="translate(138, 175)">
+    <!-- HTTPS badge -->
+    <rect x="0" y="0" width="64" height="24" rx="12" fill="#22c55e" opacity="0.15"/>
+    <text x="32" y="16" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" fill="#22c55e">HTTPS</text>
+    <!-- Self-hosted badge -->
+    <rect x="76" y="0" width="90" height="24" rx="12" fill="#3b82f6" opacity="0.15"/>
+    <text x="121" y="16" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" fill="#3b82f6">Self-Hosted</text>
+    <!-- AI badge -->
+    <rect x="178" y="0" width="90" height="24" rx="12" fill="#a855f7" opacity="0.15"/>
+    <text x="223" y="16" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" fill="#a855f7">AI Insights</text>
+    <!-- Docker badge -->
+    <rect x="280" y="0" width="72" height="24" rx="12" fill="#f59e0b" opacity="0.15"/>
+    <text x="316" y="16" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" fill="#f59e0b">Docker</text>
+  </g>
+
+  <!-- Bottom accent line -->
+  <rect x="0" y="296" width="1200" height="4" fill="url(#accent)"/>
+</svg>
