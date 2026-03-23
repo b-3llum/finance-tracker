@@ -69,7 +69,7 @@ export default function BillsPage() {
     if (bill.is_overdue) return `${Math.abs(bill.days_until_due!)} days overdue`
     if (bill.days_until_due === 0) return 'Due today'
     if (bill.days_until_due === 1) return 'Due tomorrow'
-    if (bill.days_until_due !== null && bill.days_until_due <= 7) return `Due in ${bill.days_until_due} days`
+    if (bill.days_until_due != null && bill.days_until_due <= 7) return `Due in ${bill.days_until_due} days`
     return bill.next_due_date ? `Due ${bill.next_due_date}` : `Day ${bill.due_day}`
   }
 
@@ -155,7 +155,7 @@ export default function BillsPage() {
       ) : (
         <div className="space-y-3">
           {bills.map((bill, i) => {
-            const urgency = bill.is_overdue ? 'overdue' : bill.days_until_due !== null && bill.days_until_due <= 3 ? 'urgent' : bill.days_until_due !== null && bill.days_until_due <= 7 ? 'soon' : 'normal'
+            const urgency = bill.is_overdue ? 'overdue' : bill.days_until_due != null && bill.days_until_due <= 3 ? 'urgent' : bill.days_until_due != null && bill.days_until_due <= 7 ? 'soon' : 'normal'
             const borderColor = urgency === 'overdue' ? 'border-l-red-500' : urgency === 'urgent' ? 'border-l-amber-500' : urgency === 'soon' ? 'border-l-blue-400' : 'border-l-transparent'
 
             return (
