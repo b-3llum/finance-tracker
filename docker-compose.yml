@@ -12,8 +12,7 @@ services:
       # - JWT_SECRET=your-secret-here
       # - ENCRYPTION_KEY=your-encryption-key-here
 
-      # Optional: Ollama URL for local AI (use host.docker.internal on Mac/Windows)
-      # - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - OLLAMA_BASE_URL=http://ollama:11434
     restart: unless-stopped
 
   nginx:
@@ -29,16 +28,15 @@ services:
       - fintrack
     restart: unless-stopped
 
-  # Optional: Uncomment to run Ollama alongside the app
-  # ollama:
-  #   image: ollama/ollama
-  #   container_name: fintrack-ollama
-  #   ports:
-  #     - "11434:11434"
-  #   volumes:
-  #     - ollama-data:/root/.ollama
-  #   restart: unless-stopped
+  ollama:
+    image: ollama/ollama
+    container_name: fintrack-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: unless-stopped
 
 volumes:
   fintrack-data:
-  # ollama-data:
+  ollama-data:
