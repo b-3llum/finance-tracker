@@ -181,8 +181,8 @@ docker compose version
 #### Step 2: Clone FinTrack
 
 ```bash
-git clone https://github.com/b-3llum/finance-tracker.git
-cd finance-tracker
+git clone https://github.com/b-3llum/apex-fin.git
+cd apex-fin
 ```
 
 #### Step 3: Set up HTTPS
@@ -254,8 +254,8 @@ Use this if you want to run FinTrack directly on your machine for development.
 
 ```bash
 # 1. Clone
-git clone https://github.com/b-3llum/finance-tracker.git
-cd finance-tracker
+git clone https://github.com/b-3llum/apex-fin.git
+cd apex-fin
 
 # 2. Install dependencies
 npm install
@@ -351,7 +351,7 @@ docker compose restart       # Restart all containers
 ### Updating to the latest version
 
 ```bash
-cd finance-tracker
+cd apex-fin
 git pull
 docker compose up -d --build
 ```
@@ -419,7 +419,7 @@ See **[ARCHITECTURE.md](ARCHITECTURE.md)** for full UML diagrams:
 ## Project Structure
 
 ```
-finance-tracker/
+apex-fin/
 ├── src/
 │   ├── app/
 │   │   ├── (auth)/                 # Login, register pages
