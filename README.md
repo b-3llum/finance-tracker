@@ -114,27 +114,38 @@ All three services run on an isolated Docker network. Only Nginx is exposed to t
 
 ## AI Setup
 
-Ollama runs automatically as part of the Docker stack. The llama3 model is pulled on first boot — no manual setup needed.
+Ollama runs automatically as part of the Docker stack. The default model is pulled on first boot — no manual setup needed.
 
-### Using a Different Model
+### Recommended Models by Server Specs
 
+| Server Specs | Recommended Model | Size | Speed |
+|---|---|---|---|
+| **Low-end** (2-4 cores, 4-8GB RAM, no GPU) | `llama3.2:1b` | ~1.3GB | Fast, responsive |
+| **Mid-range** (4-8 cores, 16GB RAM, no GPU) | `llama3.2:3b` | ~2GB | Good balance |
+| **High-end** (8+ cores, 32GB+ RAM or GPU) | `llama3` (8B) | ~4.7GB | Best quality |
+
+> **Important:** If you're running on a low-spec server (e.g., i5 with 8GB RAM), use `llama3.2:1b`. The default `llama3` (8B) will cause timeouts on machines without a GPU or sufficient RAM.
+
+### Changing the Model
+
+**Option 1: Set before first boot**
 ```bash
-# Set the model before starting
-OLLAMA_MODEL=mistral docker compose up -d --build
-
-# Or pull additional models into the running container
-docker exec fintrack-ollama ollama pull mistral
-docker exec fintrack-ollama ollama pull codellama
+OLLAMA_MODEL=llama3.2:1b docker compose up -d --build
 ```
 
-Then change the model in **Settings > AI Configuration** in the app.
+**Option 2: Pull into a running container**
+```bash
+docker exec fintrack-ollama ollama pull llama3.2:1b
+```
+
+Then go to **Settings > AI Configuration** in the app and update the **Model** field to match (e.g., `llama3.2:1b`).
 
 ### AI Features
 
 | Feature | Description |
 |---|---|
 | **Spending Profile** | After 14+ days of data, generates a personality profile with habits analysis |
-| **Spending Optimization** | Analyzes current month and suggests specific cuts |
+| **Spending Optimization** | Analyzes current month and suggests specific cuts with savings estimates |
 | **Financial Chat** | Ask questions about your finances with streaming responses |
 | **Report Insights** | AI-written narrative summaries in weekly/monthly reports |
 | **Anomaly Detection** | Flags unusual spending patterns |
@@ -145,6 +156,8 @@ Then change the model in **Settings > AI Configuration** in the app.
 If you prefer cloud models over local Ollama, go to **Settings** and enter API keys for:
 - **Claude** (Anthropic) — claude-sonnet-4-6
 - **OpenAI** — gpt-4o
+
+Cloud providers respond faster and produce higher quality insights, but require an API key and incur usage costs.
 
 ---
 
