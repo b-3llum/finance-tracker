@@ -16,7 +16,7 @@ RUN npm run build
 
 # Stage 3: Production runner
 FROM node:22-alpine AS runner
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat poppler-utils
 WORKDIR /app
 
 ENV NODE_ENV=production
