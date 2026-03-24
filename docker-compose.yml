@@ -31,8 +31,8 @@ services:
   ollama:
     image: ollama/ollama
     container_name: fintrack-ollama
-    ports:
-      - "11434:11434"
+    expose:
+      - "11434"
     volumes:
       - ollama-data:/root/.ollama
     restart: unless-stopped
