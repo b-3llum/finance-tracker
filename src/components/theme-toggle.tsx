@@ -1,52 +1,58 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Sun, Moon, Monitor } from 'lucide-react'
+import { Sun, Moon, Circle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-type Theme = 'light' | 'dark' | 'system'
+type Theme = 'light' | 'dark' | 'oled-dark'
 
-function getSystemTheme(): 'light' | 'dark' {
+const THEME_KEY = 'theme'
+const THEME_CLASSES = ['dark', 'oled-dark'] as const
+
+function applyTheme(theme: Theme) {
+  const root = document.documentElement
+  // Remove all theme classes first
+  THEME_CLASSES.forEach(cls => root.classList.remove(cls))
+
+  if (theme === 'dark') {
+    root.classList.add('dark')
+  } else if (theme === 'oled-dark') {
+    root.classList.add('oled-dark')
+  }
+  // 'light' = no class needed
+}
+
+function getStoredTheme(): Theme {
   if (typeof window === 'undefined') return 'dark'
+  const stored = localStorage.getItem(THEME_KEY)
+  if (stored === 'light' || stored === 'dark' || stored === 'oled-dark') {
+    return stored
+  }
+  // Default based on system preference
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
-function applyTheme(t: Theme) {
-  const resolved = t === 'system' ? getSystemTheme() : t
-  document.documentElement.classList.toggle('dark', resolved === 'dark')
-}
-
 export function ThemeToggle() {
-  const [theme, setThemeState] = useState<Theme>('system')
+  const [theme, setThemeState] = useState<Theme>('dark')
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    const stored = localStorage.getItem('theme') as Theme | null
-    const initial = stored || 'system'
+    const initial = getStoredTheme()
     setThemeState(initial)
     applyTheme(initial)
     setMounted(true)
-
-    const mq = window.matchMedia('(prefers-color-scheme: dark)')
-    const handler = () => {
-      if ((localStorage.getItem('theme') || 'system') === 'system') {
-        applyTheme('system')
-      }
-    }
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
   }, [])
 
   const setTheme = useCallback((t: Theme) => {
     setThemeState(t)
-    localStorage.setItem('theme', t)
+    localStorage.setItem(THEME_KEY, t)
     applyTheme(t)
   }, [])
 
   const options = [
     { value: 'light' as const, icon: Sun, label: 'Light' },
     { value: 'dark' as const, icon: Moon, label: 'Dark' },
-    { value: 'system' as const, icon: Monitor, label: 'System' },
+    { value: 'oled-dark' as const, icon: Circle, label: 'OLED' },
   ]
 
   if (!mounted) return null

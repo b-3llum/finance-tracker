@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { jwtVerify } from 'jose'
 
 const PUBLIC_PATHS = ['/login', '/register', '/api/auth/login', '/api/auth/register', '/api/auth/logout']
+const EXACT_PUBLIC_PATHS = ['/']
 const STATIC_PREFIXES = ['/_next', '/favicon.ico', '/sw.js', '/manifest.json', '/icons/']
 
 function getJwtSecret(): Uint8Array {
@@ -39,7 +40,12 @@ export async function middleware(request: NextRequest) {
     if (pathname.startsWith(prefix)) return NextResponse.next()
   }
 
-  // Allow public paths
+  // Allow exact public paths
+  if (EXACT_PUBLIC_PATHS.includes(pathname)) {
+    return addCors(NextResponse.next())
+  }
+
+  // Allow public path prefixes
   for (const path of PUBLIC_PATHS) {
     if (pathname.startsWith(path)) {
       const response = NextResponse.next()

@@ -19,31 +19,36 @@ import {
   TrendingUp,
   Upload,
   DollarSign,
+  Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { LanguageSwitcher } from '@/components/language-switcher'
+import { useTranslations } from '@/lib/i18n'
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
-  { href: '/bills', label: 'Bills', icon: Receipt },
-  { href: '/budget', label: 'Budget', icon: PieChart },
-  { href: '/debts', label: 'Debts', icon: CreditCard },
-  { href: '/savings', label: 'Savings', icon: Target },
-  { href: '/net-worth', label: 'Net Worth', icon: DollarSign },
-  { href: '/forecast', label: 'Forecast', icon: TrendingUp },
-  { href: '/import', label: 'Import', icon: Upload },
-  { href: '/reports', label: 'Reports', icon: FileText },
-  { href: '/insights', label: 'AI Insights', icon: Brain },
-  { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/dashboard', labelKey: 'dashboard', icon: LayoutDashboard },
+  { href: '/transactions', labelKey: 'transactions', icon: ArrowLeftRight },
+  { href: '/bills', labelKey: 'bills', icon: Receipt },
+  { href: '/budget', labelKey: 'budget', icon: PieChart },
+  { href: '/debts', labelKey: 'debts', icon: CreditCard },
+  { href: '/savings', labelKey: 'savings', icon: Target },
+  { href: '/net-worth', labelKey: 'netWorth', icon: DollarSign },
+  { href: '/forecast', labelKey: 'forecast', icon: TrendingUp },
+  { href: '/import', labelKey: 'import', icon: Upload },
+  { href: '/reports', labelKey: 'reports', icon: FileText },
+  { href: '/insights', labelKey: 'insights', icon: Brain },
+  { href: '/intelligence', labelKey: 'intelligence', icon: Sparkles },
+  { href: '/settings', labelKey: 'settings', icon: Settings },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const { user, logout } = useAuth()
+  const { t } = useTranslations('nav')
 
   return (
     <>
@@ -73,7 +78,7 @@ export function Sidebar() {
           </div>
           <div>
             <h1 className="font-bold text-lg">FinTrack</h1>
-            <p className="text-xs text-muted-foreground">Personal Finance</p>
+            <p className="text-xs text-muted-foreground">{t('personalFinance')}</p>
           </div>
         </div>
 
@@ -97,13 +102,16 @@ export function Sidebar() {
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-primary rounded-full" />
                 )}
                 <item.icon className="h-4 w-4 transition-transform duration-150 group-hover:scale-105" />
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             )
           })}
         </nav>
 
-        <ThemeToggle />
+        <div className="border-t border-border/50">
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
 
         {/* User section */}
         {user && (
@@ -121,7 +129,7 @@ export function Sidebar() {
               <button
                 onClick={logout}
                 className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-150 active:scale-95 shrink-0"
-                title="Sign out"
+                title={t('settings')}
               >
                 <LogOut className="h-4 w-4" />
               </button>

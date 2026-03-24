@@ -1,13 +1,38 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useApi, apiPut } from '@/hooks/use-api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { useToast } from '@/components/ui/toast'
-import { Save, CheckCircle, XCircle, RefreshCw, Brain, Key, Eye, EyeOff } from 'lucide-react'
+import { Save, CheckCircle, XCircle, RefreshCw, Brain, Key, Eye, EyeOff, Sun, Moon, Circle } from 'lucide-react'
+import { useTranslations, useI18n } from '@/lib/i18n'
+
+type Theme = 'light' | 'dark' | 'oled-dark'
+
+const THEME_KEY = 'theme'
+const THEME_CLASSES = ['dark', 'oled-dark'] as const
+
+function applyTheme(theme: Theme) {
+  const root = document.documentElement
+  THEME_CLASSES.forEach(cls => root.classList.remove(cls))
+  if (theme === 'dark') {
+    root.classList.add('dark')
+  } else if (theme === 'oled-dark') {
+    root.classList.add('oled-dark')
+  }
+}
+
+function getStoredTheme(): Theme {
+  if (typeof window === 'undefined') return 'dark'
+  const stored = localStorage.getItem(THEME_KEY)
+  if (stored === 'light' || stored === 'dark' || stored === 'oled-dark') {
+    return stored
+  }
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
 
 const CURRENCIES = [
   { code: 'USD', symbol: '$', name: 'US Dollar' },
@@ -27,7 +52,11 @@ const CURRENCIES = [
   { code: 'AED', symbol: 'AED', name: 'UAE Dirham' },
 ]
 
+const glassCard = 'backdrop-blur-md bg-background/70 border-border/50 shadow-lg'
+
 export default function SettingsPage() {
+  const { t } = useTranslations('settings')
+  const { locale, setLocale } = useI18n()
   const { data: settings, refetch } = useApi<Record<string, string>>('/api/settings')
   const [form, setForm] = useState({
     currency: 'USD',
@@ -48,7 +77,21 @@ export default function SettingsPage() {
   const [balanceSaving, setBalanceSaving] = useState(false)
   const [showClaudeKey, setShowClaudeKey] = useState(false)
   const [showOpenAIKey, setShowOpenAIKey] = useState(false)
+  const [theme, setThemeState] = useState<Theme>('dark')
+  const [mounted, setMounted] = useState(false)
   const { toast } = useToast()
+
+  useEffect(() => {
+    const initial = getStoredTheme()
+    setThemeState(initial)
+    setMounted(true)
+  }, [])
+
+  const setTheme = useCallback((t: Theme) => {
+    setThemeState(t)
+    localStorage.setItem(THEME_KEY, t)
+    applyTheme(t)
+  }, [])
 
   useEffect(() => {
     if (settings) {
@@ -120,37 +163,37 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">Configure your financial tracker</p>
+        <h1 className="text-2xl font-bold">{t('title')}</h1>
+        <p className="text-muted-foreground">{t('subtitle')}</p>
       </div>
 
       {/* Set Initial Balance */}
-      <Card>
+      <Card className={glassCard}>
         <CardHeader>
-          <CardTitle>Account Balance</CardTitle>
-          <CardDescription>Set or correct your current account balance</CardDescription>
+          <CardTitle>{t('accountBalance')}</CardTitle>
+          <CardDescription>{t('setBalance')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-3">
             <Input
               type="number"
               step="0.01"
-              placeholder="Enter current balance"
+              placeholder={t('enterBalance')}
               value={balanceInput}
               onChange={e => setBalanceInput(e.target.value)}
             />
             <Button onClick={setBalance} disabled={balanceSaving || !balanceInput}>
-              {balanceSaving ? <RefreshCw className="h-4 w-4 animate-spin" /> : 'Set Balance'}
+              {balanceSaving ? <RefreshCw className="h-4 w-4 animate-spin" /> : t('setBalanceBtn')}
             </Button>
           </div>
         </CardContent>
       </Card>
 
       {/* Currency */}
-      <Card>
+      <Card className={glassCard}>
         <CardHeader>
-          <CardTitle>Currency</CardTitle>
-          <CardDescription>Choose your currency for display</CardDescription>
+          <CardTitle>{t('currency')}</CardTitle>
+          <CardDescription>{t('chooseCurrency')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Select value={form.currency} onChange={e => handleCurrencyChange(e.target.value)}>
@@ -161,18 +204,112 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* Language */}
+      <Card className={glassCard}>
+        <CardHeader>
+          <CardTitle>{t('language')}</CardTitle>
+          <CardDescription>{t('chooseLanguage')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { id: 'en' as const, flag: '\ud83c\uddfa\ud83c\uddf8', label: 'English' },
+              { id: 'fr' as const, flag: '\ud83c\uddeb\ud83c\uddf7', label: 'Fran\u00e7ais' },
+            ].map(lang => (
+              <button
+                key={lang.id}
+                onClick={() => setLocale(lang.id)}
+                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-150 cursor-pointer ${
+                  locale === lang.id
+                    ? 'border-primary bg-primary/10 text-primary shadow-md'
+                    : 'border-input hover:bg-accent hover:border-accent-foreground/20'
+                }`}
+              >
+                <span className="text-2xl">{lang.flag}</span>
+                <span className="text-sm font-medium">{lang.label}</span>
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Theme */}
+      {mounted && (
+        <Card className={glassCard}>
+          <CardHeader>
+            <CardTitle>{t('theme')}</CardTitle>
+            <CardDescription>{t('chooseTheme')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                {
+                  id: 'light' as Theme,
+                  label: t('light'),
+                  icon: Sun,
+                  previewBg: 'bg-white',
+                  previewBorder: 'border-gray-200',
+                  previewBar: 'bg-gray-200',
+                  previewText: 'bg-gray-300',
+                },
+                {
+                  id: 'dark' as Theme,
+                  label: t('dark'),
+                  icon: Moon,
+                  previewBg: 'bg-zinc-800',
+                  previewBorder: 'border-zinc-700',
+                  previewBar: 'bg-zinc-600',
+                  previewText: 'bg-zinc-500',
+                },
+                {
+                  id: 'oled-dark' as Theme,
+                  label: t('oledDark'),
+                  icon: Circle,
+                  previewBg: 'bg-black',
+                  previewBorder: 'border-zinc-800',
+                  previewBar: 'bg-zinc-800',
+                  previewText: 'bg-zinc-700',
+                },
+              ].map(opt => (
+                <button
+                  key={opt.id}
+                  onClick={() => setTheme(opt.id)}
+                  className={`flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all duration-150 cursor-pointer ${
+                    theme === opt.id
+                      ? 'border-primary bg-primary/10 shadow-md'
+                      : 'border-input hover:bg-accent hover:border-accent-foreground/20'
+                  }`}
+                >
+                  {/* Mini preview card */}
+                  <div className={`w-full aspect-[4/3] rounded-lg border ${opt.previewBorder} ${opt.previewBg} p-2 flex flex-col gap-1.5`}>
+                    <div className={`h-1.5 w-3/4 rounded-full ${opt.previewBar}`} />
+                    <div className={`h-1.5 w-1/2 rounded-full ${opt.previewText}`} />
+                    <div className="flex-1" />
+                    <div className={`h-1.5 w-full rounded-full ${opt.previewBar}`} />
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <opt.icon className="h-4 w-4" />
+                    <span className="text-sm font-medium">{opt.label}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* AI Provider Selection */}
-      <Card>
+      <Card className={glassCard}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5" /> AI Provider
+            <Brain className="h-5 w-5" /> {t('aiProvider')}
           </CardTitle>
-          <CardDescription>Choose which AI powers your insights</CardDescription>
+          <CardDescription>{t('chooseAI')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-3 gap-2">
             {[
-              { id: 'ollama', label: 'Ollama', desc: 'Local (free)' },
+              { id: 'ollama', label: 'Ollama', desc: t('local') },
               { id: 'claude', label: 'Claude', desc: 'Anthropic API' },
               { id: 'openai', label: 'OpenAI', desc: 'GPT API' },
             ].map(p => (
@@ -203,7 +340,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Model</label>
+                <label className="text-sm font-medium">{t('model')}</label>
                 <Input
                   value={form.ollama_model}
                   onChange={e => setForm(f => ({ ...f, ollama_model: e.target.value }))}
@@ -218,7 +355,7 @@ export default function SettingsPage() {
             <div className="space-y-3 pt-2">
               <div>
                 <label className="text-sm font-medium flex items-center gap-1">
-                  <Key className="h-3 w-3" /> API Key
+                  <Key className="h-3 w-3" /> {t('apiKey')}
                 </label>
                 <div className="flex gap-2">
                   <Input
@@ -233,7 +370,7 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium">Model</label>
+                <label className="text-sm font-medium">{t('model')}</label>
                 <Select value={form.claude_model} onChange={e => setForm(f => ({ ...f, claude_model: e.target.value }))}>
                   <option value="claude-sonnet-4-6">Claude Sonnet 4.6 (recommended)</option>
                   <option value="claude-opus-4-6">Claude Opus 4.6</option>
@@ -248,7 +385,7 @@ export default function SettingsPage() {
             <div className="space-y-3 pt-2">
               <div>
                 <label className="text-sm font-medium flex items-center gap-1">
-                  <Key className="h-3 w-3" /> API Key
+                  <Key className="h-3 w-3" /> {t('apiKey')}
                 </label>
                 <div className="flex gap-2">
                   <Input
@@ -263,7 +400,7 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium">Model</label>
+                <label className="text-sm font-medium">{t('model')}</label>
                 <Select value={form.openai_model} onChange={e => setForm(f => ({ ...f, openai_model: e.target.value }))}>
                   <option value="gpt-4o">GPT-4o (recommended)</option>
                   <option value="gpt-4o-mini">GPT-4o Mini (fast/cheap)</option>
@@ -276,14 +413,14 @@ export default function SettingsPage() {
           {/* Test Connection */}
           <div className="flex items-center gap-3 pt-2">
             <Button variant="outline" onClick={checkAI} disabled={checkingAI}>
-              {checkingAI ? <RefreshCw className="h-4 w-4 animate-spin" /> : 'Test Connection'}
+              {checkingAI ? <RefreshCw className="h-4 w-4 animate-spin" /> : t('testConnection')}
             </Button>
             {aiStatus && (
               <div className="flex items-center gap-2">
                 {aiStatus.available ? (
                   <>
                     <CheckCircle className="h-4 w-4 text-emerald-500" />
-                    <span className="text-sm text-emerald-600">Connected</span>
+                    <span className="text-sm text-emerald-600">{t('connected')}</span>
                     <span className="text-xs text-muted-foreground">{aiStatus.detail}</span>
                   </>
                 ) : (
@@ -303,9 +440,9 @@ export default function SettingsPage() {
         {saving ? (
           <RefreshCw className="h-4 w-4 animate-spin" />
         ) : saved ? (
-          <><CheckCircle className="h-4 w-4" /> Saved!</>
+          <><CheckCircle className="h-4 w-4" /> {t('saved')}</>
         ) : (
-          <><Save className="h-4 w-4" /> Save Settings</>
+          <><Save className="h-4 w-4" /> {t('saveSettings')}</>
         )}
       </Button>
     </div>
