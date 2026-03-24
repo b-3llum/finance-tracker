@@ -59,7 +59,61 @@
 
 ## Quick Start (Docker)
 
-> **Prerequisites:** Docker and Docker Compose. That's it.
+### Prerequisites
+
+Install Docker and Docker Compose if you don't have them:
+
+<details>
+<summary><strong>Ubuntu / Debian</strong></summary>
+
+```bash
+# Install Docker
+curl -fsSL https://get.docker.com | sh
+
+# Add your user to the docker group (avoids needing sudo)
+sudo usermod -aG docker $USER
+
+# Log out and back in, then verify
+docker --version
+docker compose version
+```
+</details>
+
+<details>
+<summary><strong>Arch Linux</strong></summary>
+
+```bash
+sudo pacman -S docker docker-compose
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
+# Log out and back in
+```
+</details>
+
+<details>
+<summary><strong>macOS</strong></summary>
+
+```bash
+# Install Docker Desktop (includes Compose)
+brew install --cask docker
+
+# Open Docker Desktop from Applications, then verify
+docker --version
+docker compose version
+```
+</details>
+
+<details>
+<summary><strong>Windows</strong></summary>
+
+1. Download [Docker Desktop](https://docs.docker.com/desktop/install/windows-install/)
+2. Run the installer and enable WSL 2 when prompted
+3. Open Docker Desktop, then verify in PowerShell:
+```powershell
+docker --version
+docker compose version
+```
+</details>
 
 ### 1. Clone
 
