@@ -21,6 +21,50 @@ interface ImportResult {
 // ── Constants ───────────────────────────────────────────
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
+
+// Build a minimal PNG buffer from raw pixel data (for tesseract.js input)
+function buildPngBuffer(data: Uint8Array | Uint8ClampedArray, width: number, height: number, hasAlpha: boolean): Buffer {
+  // Create a BMP (tesseract.js accepts BMP, PNG, JPEG)
+  // We'll create a simple 24-bit BMP
+  const rowSize = Math.ceil((width * 3) / 4) * 4 // rows padded to 4 bytes
+  const pixelDataSize = rowSize * height
+  const fileSize = 54 + pixelDataSize
+  const buf = Buffer.alloc(fileSize)
+
+  // BMP header
+  buf.write('BM', 0) // signature
+  buf.writeUInt32LE(fileSize, 2) // file size
+  buf.writeUInt32LE(54, 10) // pixel data offset
+  // DIB header
+  buf.writeUInt32LE(40, 14) // DIB header size
+  buf.writeInt32LE(width, 18) // width
+  buf.writeInt32LE(-height, 22) // negative = top-down
+  buf.writeUInt16LE(1, 26) // color planes
+  buf.writeUInt16LE(24, 28) // bits per pixel
+  buf.writeUInt32LE(0, 30) // no compression
+  buf.writeUInt32LE(pixelDataSize, 34) // pixel data size
+
+  const channels = hasAlpha ? 4 : 3
+  let offset = 54
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const srcIdx = (y * width + x) * channels
+      const r = data[srcIdx] || 0
+      const g = data[srcIdx + 1] || 0
+      const b = data[srcIdx + 2] || 0
+      buf[offset++] = b // BMP is BGR
+      buf[offset++] = g
+      buf[offset++] = r
+    }
+    // Pad row to 4-byte boundary
+    while (offset % 4 !== 54 % 4 && (offset - 54) % rowSize !== 0) {
+      buf[offset++] = 0
+    }
+    offset = 54 + (y + 1) * rowSize
+  }
+
+  return buf
+}
 const MIN_REGEX_ROWS = 3
 
 const MONTH_MAP: Record<string, string> = {
@@ -31,7 +75,31 @@ const MONTH_MAP: Record<string, string> = {
 
 // ── Date parsing ────────────────────────────────────────
 
-function parseDate(raw: string): string | null {
+// Detect year range from statement text (e.g., "December 24, 2025 through January 27, 2026")
+function detectStatementYears(text: string): { startYear: number; endYear: number } {
+  const currentYear = new Date().getFullYear()
+
+  // Look for "Beginning [date] through [date]" or "Statement Period: [date] to [date]"
+  const rangeMatch = text.match(
+    /(?:beginning|from|period[:\s]*)\s*(?:\w+\s+\d{1,2},?\s+)?(\d{4})\s*(?:through|to|[-–])\s*(?:\w+\s+\d{1,2},?\s+)?(\d{4})/i
+  )
+  if (rangeMatch) {
+    return { startYear: parseInt(rangeMatch[1]), endYear: parseInt(rangeMatch[2]) }
+  }
+
+  // Look for any 4-digit years in the first 500 chars
+  const years = [...text.substring(0, 1000).matchAll(/\b(20\d{2})\b/g)].map(m => parseInt(m[1]))
+  if (years.length >= 2) {
+    return { startYear: Math.min(...years), endYear: Math.max(...years) }
+  }
+  if (years.length === 1) {
+    return { startYear: years[0], endYear: years[0] }
+  }
+
+  return { startYear: currentYear, endYear: currentYear }
+}
+
+function parseDate(raw: string, yearHint?: { startYear: number; endYear: number }): string | null {
   const s = raw.trim()
 
   // YYYY-MM-DD
@@ -48,6 +116,19 @@ function parseDate(raw: string): string | null {
       return `${mdy[3]}-${mdy[2].padStart(2, '0')}-${mdy[1].padStart(2, '0')}`
     }
     return `${mdy[3]}-${mdy[1].padStart(2, '0')}-${mdy[2].padStart(2, '0')}`
+  }
+
+  // MM/DD (no year) — common in bank statements like Citizens Bank
+  const shortMdy = s.match(/^(\d{1,2})[\/](\d{1,2})$/)
+  if (shortMdy && yearHint) {
+    const m = parseInt(shortMdy[1], 10)
+    const d = parseInt(shortMdy[2], 10)
+    if (m >= 1 && m <= 12 && d >= 1 && d <= 31) {
+      // Use startYear for months >= 10 (Oct-Dec), endYear for months <= 6 (Jan-Jun)
+      // This handles statements spanning year boundaries (e.g., Dec 2025 - Jan 2026)
+      const year = m >= 10 ? yearHint.startYear : (yearHint.startYear === yearHint.endYear ? yearHint.startYear : yearHint.endYear)
+      return `${year}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+    }
   }
 
   // "Mar 15" or "Mar 15, 2026" or "15 Mar 2026" or "15 Mar"
@@ -147,48 +228,98 @@ const TRANSACTION_LINE_RE = new RegExp(
   'im'
 )
 
-function extractTransactionsWithRegex(text: string): ParsedTransaction[] {
+function extractTransactionsWithRegex(text: string, sectionContext?: { inDebits: boolean; inCredits: boolean }, yearHint?: { startYear: number; endYear: number }): ParsedTransaction[] {
   const transactions: ParsedTransaction[] = []
   const lines = text.split('\n')
 
-  // Build a per-line regex (case-insensitive for month names)
+  // Pattern 1: Date  Description  Amount (most common)
   const lineRe = new RegExp(
     `^\\s*(${DATE_PATTERN})\\s+(.+?)\\s+(${AMOUNT_PATTERN})\\s*$`,
     'i'
   )
 
+  // Pattern 2: Date  Amount  Description (Citizens Bank, some others)
+  // e.g., "12/24    3.10    0581 DBT PURCHASE - ..."
+  const dateAmountDescRe = new RegExp(
+    `^\\s*(\\d{1,2}[/]\\d{1,2})\\s+(\\d[\\d,]*\\.\\d{2})\\s+(.+?)\\s*$`,
+    'i'
+  )
+
+  // Track section context for determining income vs expense
+  let inDebitsSection = sectionContext?.inDebits ?? false
+  let inCreditsSection = sectionContext?.inCredits ?? false
+
   for (const line of lines) {
-    const match = line.match(lineRe)
-    if (!match) continue
+    const lower = line.toLowerCase().trim()
 
-    const dateStr = match[1]
-    const description = match[2].trim()
-    const amountStr = match[3]
+    // Detect section headers
+    if (lower.includes('withdrawals') || lower.includes('debits') || lower.includes('atm/purchases')) {
+      inDebitsSection = true
+      inCreditsSection = false
+      continue
+    }
+    if (lower.includes('deposits') || lower.includes('credits') || lower.includes('electronic deposits')) {
+      inCreditsSection = true
+      inDebitsSection = false
+      continue
+    }
 
-    const parsedDate = parseDate(dateStr)
-    if (!parsedDate) continue
-
-    const parsedAmount = parseAmount(amountStr)
-    if (!parsedAmount) continue
-
-    // Skip lines that look like headers or totals
-    const lowerDesc = description.toLowerCase()
+    // Skip headers/totals/noise
     if (
-      lowerDesc.includes('opening balance') ||
-      lowerDesc.includes('closing balance') ||
-      lowerDesc.includes('total') ||
-      lowerDesc === 'date' ||
-      lowerDesc === 'description'
+      lower.includes('opening balance') || lower.includes('closing balance') ||
+      lower.includes('previous balance') || lower.includes('current balance') ||
+      lower.includes('total withdrawals') || lower.includes('total deposits') ||
+      lower.includes('balance calculation') || lower.includes('page ') ||
+      lower === 'date' || lower === 'description' || lower === 'amount' ||
+      lower.includes('statement period') || lower.includes('student checking') ||
+      lower.includes('transaction details') || lower.includes('continued') ||
+      lower.includes('member fdic') || lower.includes('please see additional')
     ) {
       continue
     }
 
-    transactions.push({
-      date: parsedDate,
-      description,
-      amount: parsedAmount.value,
-      type: parsedAmount.type,
-    })
+    // Try Pattern 1: Date Description Amount
+    let match = line.match(lineRe)
+    if (match) {
+      const parsedDate = parseDate(match[1], yearHint)
+      if (!parsedDate) continue
+      const parsedAmount = parseAmount(match[3])
+      if (!parsedAmount) continue
+
+      // Override type based on section context
+      let type = parsedAmount.type
+      if (inDebitsSection) type = 'expense'
+      if (inCreditsSection) type = 'income'
+
+      transactions.push({ date: parsedDate, description: match[2].trim(), amount: parsedAmount.value, type })
+      continue
+    }
+
+    // Try Pattern 2: Date Amount Description (Citizens Bank style)
+    const match2 = line.match(dateAmountDescRe)
+    if (match2) {
+      const parsedDate = parseDate(match2[1], yearHint)
+      if (!parsedDate) continue
+      const val = parseFloat(match2[2].replace(/,/g, ''))
+      if (isNaN(val) || val === 0) continue
+
+      let description = match2[3].trim()
+      // Clean up Citizens Bank descriptions: strip "0581 DBT PURCHASE -", "0581 POS DEBIT -"
+      description = description
+        .replace(/^\d{4}\s+(DBT\s+PURCHASE|POS\s+DEBIT|DBT\s+PURCHASE|ATM\s+WITHDRAWAL)\s*[-–]\s*/i, '')
+        .replace(/^\d{6}\s+/, '') // strip leading 6-digit codes
+        .trim()
+
+      // Determine type from section or description keywords
+      let type: 'income' | 'expense' = 'expense'
+      if (inCreditsSection) type = 'income'
+      else if (inDebitsSection) type = 'expense'
+
+      if (description.length > 2) {
+        transactions.push({ date: parsedDate, description, amount: val, type })
+      }
+      continue
+    }
   }
 
   return transactions
@@ -324,14 +455,79 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  // Extract text from PDF
-  let rawText: string
+  // Extract text from PDF — try text layer first, fall back to OCR
+  let rawText: string = ''
+  let usedOcr = false
+
   try {
-    const pdfModule = await import('pdf-parse') as any
-    const pdfParse = pdfModule.default ?? pdfModule
-    const buffer = Buffer.from(await file.arrayBuffer())
-    const pdfData = await pdfParse(buffer)
-    rawText = pdfData.text
+    const { writeFileSync, readFileSync, mkdirSync, readdirSync, unlinkSync, rmSync } = await import('fs')
+    const { join } = await import('path')
+    const { execSync } = await import('child_process')
+    const os = await import('os')
+
+    // Save uploaded file to a temp location
+    const tmpDir = join(os.tmpdir(), `fintrack-pdf-${Date.now()}`)
+    mkdirSync(tmpDir, { recursive: true })
+    const tmpPdf = join(tmpDir, 'input.pdf')
+    const arrayBuf = await file.arrayBuffer()
+    writeFileSync(tmpPdf, Buffer.from(arrayBuf))
+
+    // Step A: Try pdfjs-dist text extraction (works for text-based PDFs)
+    try {
+      const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs') as any
+      const uint8 = new Uint8Array(arrayBuf)
+      const doc = await pdfjsLib.getDocument({ data: uint8 }).promise
+
+      const pageTexts: string[] = []
+      for (let i = 1; i <= doc.numPages; i++) {
+        const page = await doc.getPage(i)
+        const content = await page.getTextContent()
+        const text = content.items.map((item: any) => item.str).join(' ')
+        pageTexts.push(text)
+      }
+      rawText = pageTexts.join('\n')
+    } catch {
+      // pdfjs-dist failed (worker issue, etc) — will try OCR below
+    }
+
+    // Step B: If text layer is empty/tiny, use pdftoppm + tesseract.js OCR
+    if (rawText.replace(/\s/g, '').length < 50) {
+      console.log('[PDF Import] Text layer empty — attempting OCR via pdftoppm + tesseract.js...')
+
+      try {
+        // Convert PDF pages to PNG images using pdftoppm (poppler-utils)
+        execSync(`pdftoppm -png -r 300 "${tmpPdf}" "${join(tmpDir, 'page')}"`, { timeout: 60000 })
+
+        const pngFiles = readdirSync(tmpDir)
+          .filter(f => f.startsWith('page-') && f.endsWith('.png'))
+          .sort()
+
+        if (pngFiles.length > 0) {
+          const Tesseract = await import('tesseract.js') as any
+          const worker = await Tesseract.createWorker('eng')
+          const ocrTexts: string[] = []
+
+          for (const pngFile of pngFiles) {
+            const pngPath = join(tmpDir, pngFile)
+            const imgBuf = readFileSync(pngPath)
+            const { data: { text } } = await worker.recognize(imgBuf)
+            ocrTexts.push(text)
+          }
+
+          await worker.terminate()
+          rawText = ocrTexts.join('\n')
+          usedOcr = true
+          console.log(`[PDF Import] OCR extracted ${rawText.length} chars from ${pngFiles.length} pages`)
+        }
+      } catch (ocrErr: any) {
+        console.error('[PDF Import] OCR failed:', ocrErr.message)
+        // pdftoppm might not be available — that's ok, we'll return an error below
+      }
+    }
+
+    // Cleanup temp files
+    try { rmSync(tmpDir, { recursive: true, force: true }) } catch {}
+
   } catch (err: any) {
     return NextResponse.json(
       { error: `Failed to parse PDF: ${err.message || 'Unknown error'}. Ensure the file is a valid PDF.` },
@@ -339,18 +535,22 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  if (!rawText || rawText.trim().length === 0) {
+  if (!rawText || rawText.trim().length < 20) {
     return NextResponse.json(
       {
-        error: 'No text could be extracted from the PDF. The file may be image-based (scanned). Try an OCR tool first.',
+        error: 'Could not extract text from this PDF. If your statement is image-based, ensure poppler-utils (pdftoppm) is installed. Otherwise, try exporting as CSV from your bank\'s website.',
         rawText: '',
       },
       { status: 422 }
     )
   }
 
+  // Detect year range from statement text
+  const yearHint = detectStatementYears(rawText)
+  console.log(`[PDF Import] Detected year range: ${yearHint.startYear}-${yearHint.endYear}`)
+
   // Step 1: Try regex extraction
-  let transactions = extractTransactionsWithRegex(rawText)
+  let transactions = extractTransactionsWithRegex(rawText, { inDebits: false, inCredits: false }, yearHint)
   let usedAiFallback = false
 
   // Step 2: If regex finds too few rows, try AI fallback
@@ -370,12 +570,11 @@ export async function POST(request: NextRequest) {
 
   const confidence = computeConfidence(transactions, usedAiFallback)
 
-  const result: ImportResult = {
+  return NextResponse.json({
     transactions,
-    confidence,
+    confidence: usedOcr ? Math.min(confidence, 0.7) : confidence, // OCR adds uncertainty
     rawText,
     usedAiFallback,
-  }
-
-  return NextResponse.json(result)
+    usedOcr,
+  })
 }
