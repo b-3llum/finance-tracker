@@ -106,7 +106,7 @@ sudo mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert
 ### 2. Generate Certs and Start
 
 ```bash
-./setup-https.sh
+sudo ./setup-https.sh
 docker compose up -d --build
 ```
 
