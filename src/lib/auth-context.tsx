@@ -41,15 +41,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  // Navigate with fallback for Safari/PWA where router.push may silently fail
+  // Hard navigate to ensure cookies are sent on the full page request
   const navigate = useCallback((path: string) => {
-    router.push(path)
-    setTimeout(() => {
-      if (window.location.pathname !== path) {
-        window.location.replace(path)
-      }
-    }, 2000)
-  }, [router])
+    window.location.href = path
+  }, [])
 
   useEffect(() => {
     fetch('/api/auth/me', { headers: authHeaders(), credentials: 'include' })
