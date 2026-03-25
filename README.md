@@ -1,17 +1,15 @@
 <p align="center">
-  <img src="public/banner.svg" alt="FinTrack" width="100%"/>
+  <img src="public/banner.svg" alt="FinTrack Banner" width="100%"/>
 </p>
 
 <p align="center">
-  <strong>Self-hosted personal finance tracker with AI intelligence, PDF import, and bilingual support.</strong>
+  <strong>Self-hosted personal finance tracker with AI-powered insights, local LLM support, and HTTPS by default.</strong>
 </p>
 
 <p align="center">
-  <a href="#install-with-docker-recommended"><img src="https://img.shields.io/badge/Docker-One_Command-2496ED?logo=docker&logoColor=white" alt="Docker"/></a>
+  <a href="#quick-start"><img src="https://img.shields.io/badge/Docker-One_Command_Setup-2496ED?logo=docker&logoColor=white" alt="Docker"/></a>
   <a href="#ai-setup"><img src="https://img.shields.io/badge/AI-Ollama_Built_In-a855f7?logo=meta&logoColor=white" alt="AI"/></a>
-  <a href="#step-3-set-up-https"><img src="https://img.shields.io/badge/HTTPS-Included-22c55e?logo=letsencrypt&logoColor=white" alt="HTTPS"/></a>
-  <img src="https://img.shields.io/badge/i18n-EN_|_FR-3b82f6" alt="i18n"/>
-  <img src="https://img.shields.io/badge/Theme-Light_|_Dark_|_OLED-1e1b4b" alt="Themes"/>
+  <a href="#https-setup"><img src="https://img.shields.io/badge/HTTPS-Included-22c55e?logo=letsencrypt&logoColor=white" alt="HTTPS"/></a>
 </p>
 
 ---
@@ -20,444 +18,304 @@
 
 | Category | What you get |
 |---|---|
-| **Dashboard** | KPI hero row (net worth, income, expenses, savings rate) with sparklines, gradient area chart, interactive donut, cash-flow waterfall, GitHub-style spending heatmap |
-| **Intelligence Engine** | Financial health score (0–100), spending DNA profile, personality type, impulse score, subscription burden, category fingerprint (50/30/20), pay-cycle analysis |
-| **Predictions** | Next-month category forecasts, cash shortfall detection, trend alerts (>15% increase), budget recommendations, savings potential |
-| **Smart Categorization** | Auto-categorize imports via merchant rules, learn from manual corrections, fuzzy pattern matching |
-| **PDF Import + OCR** | Parse bank statement PDFs — text-based and scanned/image-based via OCR (tesseract.js + poppler). Confidence scoring, inline editing before import |
-| **CSV/TSV Import** | Drag-and-drop with auto column detection, preview table, bulk import |
-| **Budgeting** | Per-category budgets, pace indicator (day-of-month progress line), flex mode (Needs/Wants/Savings), budget vs actual chart, rollover visualization |
-| **Transactions** | Inline editing, bulk operations (select + categorize/delete), split transactions across categories, smart search with amount filters |
-| **Bills & Debts** | Recurring bill reminders, debt tracking with interest rates and payment history |
-| **Savings** | Goals with deadlines, contribution tracking, progress bars |
-| **Net Worth** | Assets vs liabilities with history chart |
+| **Core** | Balance tracking, transactions, categories, multi-currency, dark/light mode |
+| **Budgeting** | Monthly budgets per category with visual progress bars |
+| **Savings** | Goals with deadlines, contribution tracking, daily/weekly rates |
+| **Debt Tracking** | Debts, interest rates, snowball/avalanche payoff strategies |
+| **Bills** | Recurring bill reminders with due dates and auto-pay flags |
+| **Net Worth** | Assets vs liabilities breakdown with donut chart |
 | **Forecasting** | Cash flow projections based on spending patterns |
+| **Data Import** | Bulk import from CSV/TSV bank exports with auto-column detection |
 | **Reports** | Auto-generated weekly/monthly reports with AI narrative |
-| **AI Chat** | Streaming financial chat with Ollama, Claude, or OpenAI |
-| **i18n** | Full English/French bilingual support with language switcher |
-| **Themes** | Light, Dark (glassmorphism), OLED Dark (true black) |
-| **Onboarding** | 4-step wizard for new users (name, import, currency, done) |
-| **Mobile** | Bottom navigation bar on small screens, responsive layout |
-| **Landing Page** | Scroll-animated marketing page with 3D container scroll, floating cards, animated counters |
-| **Security** | AES-256-GCM encryption, HTTPS, JWT auth, bcrypt, rate limiting, user-scoped data |
-| **PWA** | Installable as progressive web app |
+| **AI Insights** | Spending optimization, 60-day profiles, anomaly detection, financial chat |
+| **Security** | AES-256-GCM encryption, HTTPS, JWT auth, isolated multi-user data |
+| **PWA** | Installable as a progressive web app with offline caching |
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 19, Next.js 16 (App Router), Tailwind CSS 4, Recharts, Framer Motion, Lucide Icons |
+| Frontend | React 19, Next.js 16 (App Router), Tailwind CSS 4, Recharts, Lucide Icons |
 | Database | SQLite (better-sqlite3) |
 | Auth | bcryptjs + jose (JWT HS256, 7-day expiry) |
 | Encryption | AES-256-GCM (node:crypto) |
 | AI | Ollama (local, built in) / Claude / OpenAI |
-| OCR | tesseract.js + poppler-utils (pdftoppm) |
-| i18n | Custom context provider with JSON translation files |
 | TLS | Nginx reverse proxy + mkcert or self-signed |
 | Container | Docker Compose (3 services: app, nginx, ollama) |
 
 ---
 
-## Installation
+## Quick Start
 
-There are two ways to run FinTrack. **Docker is recommended** — it handles everything (app, database, AI, HTTPS) in one command.
+### Prerequisites
 
----
+- Docker and Docker Compose
+- That's it. No Node.js, no npm, no database setup.
 
-### Install with Docker (Recommended)
-
-Everything below is copy-paste. You don't need Node.js, npm, or any database — Docker handles it all.
-
-#### Step 1: Install Docker
-
-Pick your OS and run every command in order:
-
-<details open>
-<summary><strong>Ubuntu / Debian</strong></summary>
+### 1. Clone
 
 ```bash
-# 1. Install Docker Engine + Compose plugin
-curl -fsSL https://get.docker.com | sh
-
-# 2. Let your user run Docker without sudo
-sudo usermod -aG docker $USER
-
-# 3. Apply the group change (or log out and back in)
-newgrp docker
-
-# 4. Verify both are installed
-docker --version
-docker compose version
+git clone https://github.com/b-3llum/finance-tracker.git
+cd finance-tracker
 ```
 
-You should see version numbers for both. If `docker compose version` says "command not found", run:
-```bash
-sudo apt update && sudo apt install -y docker-compose-plugin
-```
-</details>
-
-<details>
-<summary><strong>Arch Linux</strong></summary>
+### 2. Generate HTTPS Certs
 
 ```bash
-# 1. Install Docker and Compose
-sudo pacman -S --noconfirm docker docker-compose
-
-# 2. Start Docker and enable on boot
-sudo systemctl enable --now docker
-
-# 3. Let your user run Docker without sudo
-sudo usermod -aG docker $USER
-
-# 4. Apply the group change (or log out and back in)
-newgrp docker
-
-# 5. Verify
-docker --version
-docker compose version
-```
-</details>
-
-<details>
-<summary><strong>Fedora / RHEL / CentOS</strong></summary>
-
-```bash
-# 1. Install Docker
-sudo dnf install -y dnf-plugins-core
-sudo dnf-3 config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
-sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-
-# 2. Start Docker and enable on boot
-sudo systemctl enable --now docker
-
-# 3. Let your user run Docker without sudo
-sudo usermod -aG docker $USER
-
-# 4. Apply the group change (or log out and back in)
-newgrp docker
-
-# 5. Verify
-docker --version
-docker compose version
-```
-</details>
-
-<details>
-<summary><strong>macOS</strong></summary>
-
-```bash
-# 1. Install Docker Desktop (includes Compose)
-brew install --cask docker
-
-# 2. Open Docker Desktop — it must be running before you continue
-open -a Docker
-
-# 3. Wait for the whale icon to appear in the menu bar, then verify
-docker --version
-docker compose version
-```
-
-If you don't have Homebrew, install it first:
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-</details>
-
-<details>
-<summary><strong>Windows</strong></summary>
-
-1. Download [Docker Desktop for Windows](https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe)
-2. Run the installer — check **"Use WSL 2"** when prompted
-3. Restart your computer if asked
-4. Open Docker Desktop from the Start menu
-5. Open PowerShell and verify:
-
-```powershell
-docker --version
-docker compose version
-```
-</details>
-
-#### Step 2: Clone FinTrack
-
-```bash
-git clone https://github.com/b-3llum/apex-fin.git
-cd apex-fin
-```
-
-#### Step 3: Set up HTTPS
-
-```bash
-# For localhost
+# Localhost only
 sudo ./setup-https.sh
 
-# For a LAN server (replace with your actual IP)
+# LAN server (e.g., 10.1.0.3)
 sudo ./setup-https.sh 10.1.0.3
 ```
 
-> **Tip:** Install [mkcert](https://github.com/FiloSottile/mkcert) first for a green padlock with zero browser warnings. Without it, the script generates a self-signed cert that works but shows a browser warning.
+The script uses mkcert if available (green padlock, zero warnings), otherwise falls back to self-signed with instructions on how to trust it.
 
-#### Step 4: Start everything
+### 3. Start
 
 ```bash
 docker compose up -d --build
 ```
 
-This builds and starts 3 containers:
+This starts 3 containers:
 
-| Container | What it does |
+| Container | Purpose |
 |---|---|
-| `fintrack` | The Next.js web app (internal port 3000) |
-| `fintrack-nginx` | HTTPS reverse proxy (ports 80 and 443) |
-| `fintrack-ollama` | Local AI model server (auto-downloads llama3 on first boot) |
+| `fintrack` | Next.js app on internal port 3000 |
+| `fintrack-nginx` | Nginx reverse proxy on ports 80/443 |
+| `fintrack-ollama` | Ollama AI server with llama3 (auto-pulled on first boot) |
 
-> **First boot takes 3–5 minutes** while the AI model downloads (~4.7 GB). You'll see `pulling manifest...` in the logs. Subsequent starts are instant.
+First boot takes a few minutes while the llama3 model downloads (~4.7GB). Subsequent starts are instant.
 
-#### Step 5: Open the app
+### 4. Open
 
 ```
-https://localhost
+https://localhost        # local machine
+https://10.1.0.3        # LAN access (use your server IP)
 ```
 
-Or if you're running on a LAN server:
-```
-https://YOUR-SERVER-IP
-```
-
-**That's it.** Register an account and start tracking your finances. Your data is stored in Docker volumes and persists across restarts and rebuilds.
-
-#### Checking if everything is running
-
-```bash
-# See container status
-docker compose ps
-
-# Watch app logs
-docker compose logs -f fintrack
-
-# Watch AI logs (useful during first boot)
-docker compose logs -f fintrack-ollama
-```
-
----
-
-### Install without Docker (Manual)
-
-Use this if you want to run FinTrack directly on your machine for development.
-
-#### Prerequisites
-
-- **Node.js 22+** — [download here](https://nodejs.org/) or use [nvm](https://github.com/nvm-sh/nvm)
-- **poppler-utils** (optional, for scanned PDF OCR)
-
-#### Steps
-
-```bash
-# 1. Clone
-git clone https://github.com/b-3llum/apex-fin.git
-cd apex-fin
-
-# 2. Install dependencies
-npm install
-
-# 3. Start the dev server
-npm run dev
-
-# 4. Open in browser
-open http://localhost:3000
-```
-
-#### Add AI (optional)
-
-FinTrack uses Ollama for local AI. Without it, everything works except AI Insights.
-
-```bash
-# Install Ollama
-curl -fsSL https://ollama.com/install.sh | sh
-
-# Pull a model (pick one based on your machine)
-ollama pull llama3.2:1b    # Low-end (4-8 GB RAM)
-ollama pull llama3.2:3b    # Mid-range (16 GB RAM)
-ollama pull llama3          # High-end (32 GB+ or GPU)
-
-# Ollama starts automatically — no further config needed
-```
-
-#### Add OCR for scanned PDFs (optional)
-
-```bash
-# Ubuntu / Debian
-sudo apt install poppler-utils
-
-# Arch
-sudo pacman -S poppler
-
-# macOS
-brew install poppler
-```
-
----
-
-## AI Setup
-
-### How it works
-
-The Docker stack includes Ollama — a local AI server that runs open-source language models on your hardware. No API keys, no cloud, no costs. The model is downloaded automatically on first boot.
-
-### Recommended model by hardware
-
-| Your machine | Model to use | Download size | Notes |
-|---|---|---|---|
-| Weak (2-4 cores, 4-8 GB RAM, no GPU) | `llama3.2:1b` | ~1.3 GB | Fast responses, lower quality |
-| Medium (4-8 cores, 16 GB RAM) | `llama3.2:3b` | ~2 GB | Good balance of speed and quality |
-| Strong (8+ cores, 32 GB+ RAM or GPU) | `llama3` (8B) | ~4.7 GB | Best quality, default in Docker |
-
-### Changing the AI model
-
-**Option A — before first boot:**
-```bash
-OLLAMA_MODEL=llama3.2:1b docker compose up -d --build
-```
-
-**Option B — after the stack is running:**
-```bash
-docker exec fintrack-ollama ollama pull llama3.2:1b
-```
-Then go to **Settings → AI Configuration** in the app and change the **Model** field to `llama3.2:1b`.
-
-### Using cloud AI instead (optional)
-
-If you prefer cloud models over local Ollama, go to **Settings** in the app and switch the AI provider:
-
-| Provider | Model | What you need |
-|---|---|---|
-| **Claude** (Anthropic) | claude-sonnet-4-6 | API key from [console.anthropic.com](https://console.anthropic.com) |
-| **OpenAI** | gpt-4o | API key from [platform.openai.com](https://platform.openai.com) |
-
-Cloud providers are faster and produce better insights, but cost money per request.
-
----
-
-## Day-to-day Usage
-
-### Starting and stopping
-
-```bash
-docker compose up -d        # Start (runs in background)
-docker compose down          # Stop
-docker compose restart       # Restart all containers
-```
-
-### Updating to the latest version
-
-```bash
-cd apex-fin
-git pull
-docker compose up -d --build
-```
-
-### Viewing logs
-
-```bash
-docker compose logs -f fintrack          # App logs
-docker compose logs -f fintrack-ollama   # AI logs
-docker compose logs -f fintrack-nginx    # HTTPS proxy logs
-```
-
-### Keeping sessions across restarts
-
-By default, everyone gets logged out when the container restarts. To keep sessions:
-
-```bash
-# 1. Generate secrets
-openssl rand -base64 32    # → copy this as JWT_SECRET
-openssl rand -hex 32       # → copy this as ENCRYPTION_KEY
-
-# 2. Add them to docker-compose.yml under fintrack > environment:
-#    JWT_SECRET=your-jwt-secret-here
-#    ENCRYPTION_KEY=your-encryption-key-here
-
-# 3. Restart
-docker compose up -d --build
-```
-
-### Importing bank transactions
-
-1. Download a CSV or PDF statement from your bank's website
-2. Go to **Import** in the sidebar
-3. Drop the file — FinTrack auto-detects the format:
-   - **CSV/TSV:** auto-maps columns → preview → import
-   - **PDF (text-based):** extracts transactions via regex
-   - **PDF (scanned/image):** converts to images via OCR → extracts transactions
-4. Review and edit the extracted data
-5. Click **Import**
-
-### Getting started with a new account
-
-1. Register at the app URL
-2. The onboarding wizard walks you through: name → import → currency → done
-3. Go to **Settings** to configure AI provider and currency
-4. Import your first bank statement or add transactions manually
-5. Set category budgets on the **Budget** page
-6. Check **Intelligence** for your financial health score
+Register an account and start tracking. Your data persists in Docker volumes across restarts and rebuilds.
 
 ---
 
 ## Architecture
 
-See **[ARCHITECTURE.md](ARCHITECTURE.md)** for full UML diagrams:
+```
+Browser ──HTTPS──> Nginx (443) ──HTTP──> Next.js (3000)
+                                            │
+                                            ├──> SQLite (file DB)
+                                            │
+                                            └──> Ollama (11434) ──> llama3
+```
 
-- System overview (browser → nginx → app → DB/AI)
-- Database ER diagram (15 tables)
-- API route map (40+ endpoints)
-- Component hierarchy
-- Intelligence engine data flow
-- Authentication + security architecture
+All three services run on an isolated Docker network. Only Nginx is exposed to the host.
+
+---
+
+## AI Setup
+
+Ollama runs automatically as part of the Docker stack. The default model is pulled on first boot — no manual setup needed.
+
+### Recommended Models by Server Specs
+
+| Server Specs | Recommended Model | Size | Speed |
+|---|---|---|---|
+| **Low-end** (2-4 cores, 4-8GB RAM, no GPU) | `llama3.2:1b` | ~1.3GB | Fast, responsive |
+| **Mid-range** (4-8 cores, 16GB RAM, no GPU) | `llama3.2:3b` | ~2GB | Good balance |
+| **High-end** (8+ cores, 32GB+ RAM or GPU) | `llama3` (8B) | ~4.7GB | Best quality |
+
+> **Important:** If you're running on a low-spec server (e.g., i5 with 8GB RAM), use `llama3.2:1b`. The default `llama3` (8B) will cause timeouts on machines without a GPU or sufficient RAM.
+
+### Changing the Model
+
+**Option 1: Set before first boot**
+```bash
+OLLAMA_MODEL=llama3.2:1b docker compose up -d --build
+```
+
+**Option 2: Pull into a running container**
+```bash
+docker exec fintrack-ollama ollama pull llama3.2:1b
+```
+
+Then go to **Settings > AI Configuration** in the app and update the **Model** field to match (e.g., `llama3.2:1b`).
+
+### AI Features
+
+| Feature | Description |
+|---|---|
+| **Spending Profile** | After 14+ days of data, generates a personality profile with habits analysis |
+| **Spending Optimization** | Analyzes current month and suggests specific cuts with savings estimates |
+| **Financial Chat** | Ask questions about your finances with streaming responses |
+| **Report Insights** | AI-written narrative summaries in weekly/monthly reports |
+| **Anomaly Detection** | Flags unusual spending patterns |
+| **Subscription Detection** | Identifies recurring charges from transaction history |
+
+### Cloud AI (Optional)
+
+If you prefer cloud models over local Ollama, go to **Settings** and enter API keys for:
+- **Claude** (Anthropic) — claude-sonnet-4-6
+- **OpenAI** — gpt-4o
+
+Cloud providers respond faster and produce higher quality insights, but require an API key and incur usage costs.
+
+---
+
+## HTTPS Setup
+
+The `setup-https.sh` script handles everything:
+
+| Scenario | Command | Result |
+|---|---|---|
+| Localhost with mkcert | `sudo ./setup-https.sh` | Green padlock, zero warnings |
+| LAN server with mkcert | `sudo ./setup-https.sh 10.1.0.3` | Green padlock on IP |
+| Any machine without mkcert | `sudo ./setup-https.sh` | Self-signed (works, shows warning) |
+| LAN without mkcert | `sudo ./setup-https.sh 10.1.0.3` | Self-signed for IP |
+
+**To install mkcert** (recommended for zero browser warnings):
+
+```bash
+# Mac
+brew install mkcert
+
+# Linux (Ubuntu/Debian)
+sudo apt install libnss3-tools
+curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"
+chmod +x mkcert-v*-linux-amd64
+sudo mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert
+```
+
+**Trust a self-signed cert in Chrome (Linux):**
+
+```bash
+certutil -d sql:$HOME/.pki/nssdb -A -t "CT,C,C" -n FinTrack -i certs/server.crt
+# Then restart Chrome
+```
+
+---
+
+## Management
+
+```bash
+docker compose up -d              # start
+docker compose down               # stop
+docker compose up -d --build      # rebuild after code changes
+docker compose logs -f fintrack   # app logs
+docker compose logs -f fintrack-ollama  # AI logs
+docker compose restart            # restart all services
+```
+
+### Persistent Secrets
+
+Sessions invalidate on container restart by default. To preserve sessions:
+
+```yaml
+# In docker-compose.yml, uncomment and set:
+environment:
+  - JWT_SECRET=your-secret-here
+  - ENCRYPTION_KEY=your-encryption-key-here
+```
+
+Generate secrets: `openssl rand -base64 32`
+
+### Updating
+
+```bash
+cd ~/finance-tracker
+git pull
+docker compose up -d --build
+```
+
+---
+
+## Manual Setup (Without Docker)
+
+```bash
+# Prerequisites: Node.js 22+, npm
+git clone https://github.com/b-3llum/finance-tracker.git
+cd finance-tracker
+npm install
+npm run dev
+# Open http://localhost:3000
+
+# Optional: Install Ollama separately for AI
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull llama3
+```
+
+---
+
+## Data Import
+
+FinTrack can import bank transaction data from CSV/TSV files.
+
+### Supported Format
+
+```csv
+Date,Description,Amount,Type,Category
+2026-03-01,Salary Deposit,4500.00,income,Income
+2026-03-02,Starbucks Coffee,-6.75,expense,Food & Dining
+2026-03-03,Netflix Subscription,-15.99,expense,Subscriptions
+```
+
+**Required columns:** Date, Amount
+**Optional columns:** Description, Type (income/expense), Category
+
+The import wizard auto-detects columns by header name. Supports multiple date formats (YYYY-MM-DD, MM/DD/YYYY, DD/MM/YYYY).
+
+### How to Import
+
+1. Export transactions from your bank as CSV
+2. Go to **Import** in the sidebar
+3. Drop the file or click to browse
+4. Review the auto-mapped columns
+5. Click Import
+
+---
+
+## Getting Started
+
+1. Register at `/register`
+2. Go to **Settings** — set your balance and currency
+3. Import bank transactions via CSV (or add manually)
+4. Set category budgets on the **Budget** page
+5. Create savings goals in **Savings**
+6. Check **Insights** for AI-powered spending analysis
 
 ---
 
 ## Project Structure
 
 ```
-apex-fin/
+finance-tracker/
 ├── src/
 │   ├── app/
-│   │   ├── (auth)/                 # Login, register pages
-│   │   ├── (app)/                  # All authenticated pages
-│   │   │   ├── dashboard/          # KPI cards, charts, heatmap
-│   │   │   ├── transactions/       # Inline edit, bulk ops, split
-│   │   │   ├── budget/             # Pace indicator, flex mode
-│   │   │   ├── intelligence/       # Health score, predictions
-│   │   │   ├── savings/            # Goals + contributions
-│   │   │   ├── debts/              # Debt tracking + payments
-│   │   │   ├── bills/              # Recurring reminders
-│   │   │   ├── net-worth/          # Assets vs liabilities
-│   │   │   ├── forecast/           # Cash flow projections
-│   │   │   ├── reports/            # AI-generated reports
-│   │   │   ├── insights/           # AI chat
-│   │   │   ├── import/             # CSV + PDF import wizard
-│   │   │   └── settings/           # Language, theme, AI, currency
-│   │   ├── api/                    # 40+ REST API endpoints
-│   │   │   ├── intelligence/       # Profile, predictions
-│   │   │   ├── import/pdf/         # PDF + OCR extraction
-│   │   │   └── categorize/         # Smart auto-categorization
-│   │   └── page.tsx                # Framer Motion landing page
-│   ├── components/
-│   │   ├── dashboard/              # BalanceChart, SpendingDonut
-│   │   ├── layout/                 # Sidebar, BottomNav
-│   │   ├── ui/                     # Shared components (Button, Card, etc.)
-│   │   ├── onboarding.tsx          # 4-step wizard
-│   │   ├── language-switcher.tsx   # EN/FR toggle
-│   │   └── theme-toggle.tsx        # Light/Dark/OLED
-│   ├── messages/                   # en.json, fr.json (translations)
-│   ├── hooks/                      # useApi data fetching hook
-│   └── lib/                        # Auth, DB, AI client, crypto, i18n
-├── migrations/                     # 5 SQL migration files (auto-run)
-├── docker-compose.yml              # 3-service Docker stack
-├── Dockerfile                      # Multi-stage production build
-├── setup-https.sh                  # HTTPS certificate generator
-├── ARCHITECTURE.md                 # UML diagrams (Mermaid)
-└── README.md
+│   │   ├── (auth)/             # Login and register pages
+│   │   ├── (app)/              # Authenticated app pages
+│   │   │   ├── dashboard/      # Main dashboard with charts
+│   │   │   ├── transactions/   # Transaction management
+│   │   │   ├── budget/         # Budget tracking
+│   │   │   ├── savings/        # Savings goals
+│   │   │   ├── debts/          # Debt tracking
+│   │   │   ├── bills/          # Bill reminders
+│   │   │   ├── net-worth/      # Net worth dashboard
+│   │   │   ├── forecast/       # Financial forecasting
+│   │   │   ├── reports/        # Generated reports
+│   │   │   ├── insights/       # AI insights
+│   │   │   ├── import/         # CSV import wizard
+│   │   │   └── settings/       # Configuration
+│   │   └── api/                # REST API routes
+│   ├── components/             # UI components
+│   ├── hooks/                  # Data-fetching hooks
+│   └── lib/                    # Auth, DB, AI client, crypto
+├── migrations/                 # SQL migrations (auto-run)
+├── nginx/                      # Nginx reverse proxy config
+├── certs/                      # TLS certificates (generated)
+├── setup-https.sh              # HTTPS cert generator
+├── ollama-entrypoint.sh        # Ollama auto-pull entrypoint
+├── docker-compose.yml          # 3-service Docker stack
+├── Dockerfile                  # Multi-stage production build
+└── docker-entrypoint.sh        # Secret generation + app start
 ```
 
 ---

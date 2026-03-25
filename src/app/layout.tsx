@@ -4,7 +4,6 @@ import './globals.css'
 import { AuthProvider } from '@/lib/auth-context'
 import { ToastProvider } from '@/components/ui/toast'
 import { ServiceWorkerRegistration } from '@/components/sw-register'
-import { I18nProvider } from '@/lib/i18n'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -58,11 +57,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={inter.className}>
         <AuthProvider>
-          <I18nProvider>
-            <ToastProvider>
-              {children}
-            </ToastProvider>
-          </I18nProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
         </AuthProvider>
         <ServiceWorkerRegistration />
       </body>

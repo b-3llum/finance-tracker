@@ -42,4 +42,3 @@ next-env.d.ts
 
 # local config
 .claude/
-eng.traineddata

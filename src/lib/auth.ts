@@ -95,8 +95,7 @@ export async function authenticateUser(email: string, password: string): Promise
 }
 
 export function getSessionCookie(token: string): string {
-  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
-  return `auth_token=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${7 * 24 * 60 * 60}${secure}`
+  return `auth_token=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${7 * 24 * 60 * 60}`
 }
 
 export function clearSessionCookie(): string {

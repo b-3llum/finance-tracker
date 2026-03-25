@@ -46,9 +46,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push(path)
     setTimeout(() => {
       if (window.location.pathname !== path) {
-        window.location.href = path
+        window.location.replace(path)
       }
-    }, 1000)
+    }, 2000)
   }, [router])
 
   useEffect(() => {

@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
-@custom-variant oled-dark (&:where(.oled-dark, .oled-dark *));
 
 @theme {
   --color-background: oklch(0.98 0.002 260);
@@ -31,8 +30,6 @@
   body {
     @apply bg-background text-foreground antialiased;
   }
-
-  /* ---- Dark theme ---- */
   .dark {
     --color-background: oklch(0.13 0.008 270);
     --color-foreground: oklch(0.96 0 0);
@@ -52,148 +49,7 @@
     --color-input: oklch(0.28 0.018 270);
     --color-ring: oklch(0.65 0.2 265);
   }
-
-  /* ---- OLED Dark theme (true black) ---- */
-  .oled-dark {
-    --color-background: oklch(0 0 0);
-    --color-foreground: oklch(0.95 0 0);
-    --color-card: oklch(0.08 0.01 270);
-    --color-card-foreground: oklch(0.95 0 0);
-    --color-primary: oklch(0.7 0.2 265);
-    --color-primary-foreground: oklch(0 0 0);
-    --color-secondary: oklch(0.12 0.015 270);
-    --color-secondary-foreground: oklch(0.95 0 0);
-    --color-muted: oklch(0.12 0.015 270);
-    --color-muted-foreground: oklch(0.55 0.01 270);
-    --color-accent: oklch(0.12 0.015 270);
-    --color-accent-foreground: oklch(0.95 0 0);
-    --color-destructive: oklch(0.577 0.245 27.325);
-    --color-destructive-foreground: oklch(0.985 0 0);
-    --color-border: oklch(0.18 0.015 270);
-    --color-input: oklch(0.18 0.015 270);
-    --color-ring: oklch(0.7 0.2 265);
-  }
 }
-
-/* ======================================================
-   Glassmorphism utilities
-   ====================================================== */
-
-@utility glass {
-  background: oklch(1 0 0 / 0.06);
-  backdrop-filter: blur(16px) saturate(1.4);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  border: 1px solid oklch(1 0 0 / 0.1);
-}
-
-@utility glass-card {
-  background: oklch(1 0 0 / 0.05);
-  backdrop-filter: blur(24px) saturate(1.5);
-  -webkit-backdrop-filter: blur(24px) saturate(1.5);
-  border: 1px solid oklch(1 0 0 / 0.08);
-  box-shadow:
-    0 4px 24px oklch(0 0 0 / 0.04),
-    inset 0 1px 0 oklch(1 0 0 / 0.06);
-}
-
-@utility glass-strong {
-  background: oklch(1 0 0 / 0.1);
-  backdrop-filter: blur(32px) saturate(1.6);
-  -webkit-backdrop-filter: blur(32px) saturate(1.6);
-  border: 1px solid oklch(1 0 0 / 0.15);
-  box-shadow:
-    0 8px 32px oklch(0 0 0 / 0.06),
-    inset 0 1px 0 oklch(1 0 0 / 0.1);
-}
-
-/* Light mode glass overrides — more visible on light backgrounds */
-@layer base {
-  :where(:not(.dark, .oled-dark)) .glass,
-  :where(:not(.dark, .oled-dark)) .glass-card,
-  :where(:not(.dark, .oled-dark)) .glass-strong {
-    background: oklch(1 0 0 / 0.65);
-    border-color: oklch(0 0 0 / 0.06);
-  }
-}
-
-/* ======================================================
-   Ambient gradient orbs (dark modes only)
-   ====================================================== */
-
-@utility ambient-orbs {
-  position: relative;
-  overflow: hidden;
-}
-
-@layer base {
-  :where(.dark, .oled-dark) .ambient-orbs::before,
-  :where(.dark, .oled-dark) .ambient-orbs::after {
-    content: '';
-    position: fixed;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: -1;
-    filter: blur(100px);
-    opacity: 0.35;
-  }
-
-  :where(.dark, .oled-dark) .ambient-orbs::before {
-    width: 500px;
-    height: 500px;
-    top: -120px;
-    left: -80px;
-    background: radial-gradient(
-      circle,
-      oklch(0.45 0.2 280) 0%,
-      oklch(0.35 0.15 290 / 0) 70%
-    );
-  }
-
-  :where(.dark, .oled-dark) .ambient-orbs::after {
-    width: 400px;
-    height: 400px;
-    bottom: -60px;
-    right: -60px;
-    background: radial-gradient(
-      circle,
-      oklch(0.4 0.18 250) 0%,
-      oklch(0.3 0.12 260 / 0) 70%
-    );
-  }
-
-  /* Dimmer orbs on OLED to avoid halo on pure black */
-  :where(.oled-dark) .ambient-orbs::before,
-  :where(.oled-dark) .ambient-orbs::after {
-    opacity: 0.2;
-  }
-}
-
-/* ======================================================
-   Noise texture overlay (dark modes only)
-   ====================================================== */
-
-@utility noise-overlay {
-  position: relative;
-}
-
-@layer base {
-  :where(.dark, .oled-dark) .noise-overlay::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    pointer-events: none;
-    opacity: 0.035;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-repeat: repeat;
-    background-size: 200px 200px;
-  }
-}
-
-/* ======================================================
-   Existing animations
-   ====================================================== */
 
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(6px); }
@@ -267,32 +123,3 @@
 @utility stagger-3 { animation-delay: 150ms; }
 @utility stagger-4 { animation-delay: 200ms; }
 @utility stagger-5 { animation-delay: 250ms; }
-
-/* ======================================================
-   New animations: slide-up & lift
-   ====================================================== */
-
-@keyframes slide-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes lift {
-  from { transform: translateY(0); box-shadow: 0 1px 3px oklch(0 0 0 / 0.08); }
-  to { transform: translateY(-2px); box-shadow: 0 8px 24px oklch(0 0 0 / 0.12); }
-}
-
-@utility animate-slide-up {
-  animation: slide-up 0.4s ease-out both;
-}
-
-@utility animate-lift {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-@layer base {
-  .animate-lift:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px oklch(0 0 0 / 0.12);
-  }
-}

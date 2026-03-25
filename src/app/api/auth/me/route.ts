@@ -5,8 +5,8 @@ export async function GET(request: Request) {
   try {
     const userId = getUserId(request)
     const db = getDb()
-    const user = db.prepare('SELECT id, email, name, created_at, onboarding_complete FROM users WHERE id = ?').get(userId) as
-      { id: number; email: string; name: string | null; created_at: string; onboarding_complete: number } | undefined
+    const user = db.prepare('SELECT id, email, name, created_at FROM users WHERE id = ?').get(userId) as
+      { id: number; email: string; name: string | null; created_at: string } | undefined
 
     if (!user) {
       return Response.json({ error: 'User not found' }, { status: 404 })
