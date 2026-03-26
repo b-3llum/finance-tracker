@@ -1,19 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useAuth } from '@/lib/auth-context'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Wallet, LogIn } from 'lucide-react'
 
 export default function LoginPage() {
-  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [jsReady, setJsReady] = useState(false)
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    setJsReady(true)
+    const urlError = searchParams.get('error')
+    if (urlError) setError(urlError)
+  }, [searchParams])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -40,6 +45,8 @@ export default function LoginPage() {
     }
   }
 
+  const inputClass = "flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/40 transition-colors duration-150"
+
   return (
     <div className="w-full max-w-md animate-fade-in">
       <div className="flex items-center justify-center gap-3 mb-8">
@@ -58,7 +65,12 @@ export default function LoginPage() {
           <CardDescription>Sign in to your account</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action="#" method="POST" onSubmit={handleSubmit} className="space-y-4">
+          <form
+            action="/api/auth/login-form"
+            method="POST"
+            onSubmit={jsReady ? handleSubmit : undefined}
+            className="space-y-4"
+          >
             {error && (
               <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3 animate-fade-in">
                 {error}
@@ -70,10 +82,11 @@ export default function LoginPage() {
                 type="email"
                 name="email"
                 placeholder="you@example.com"
-                value={email}
+                value={jsReady ? email : undefined}
+                defaultValue={jsReady ? undefined : ''}
                 onChange={e => setEmail(e.target.value)}
                 required
-                className="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/40 transition-colors duration-150"
+                className={inputClass}
               />
             </div>
             <div className="space-y-2">
@@ -82,14 +95,19 @@ export default function LoginPage() {
                 type="password"
                 name="password"
                 placeholder="Enter your password"
-                value={password}
+                value={jsReady ? password : undefined}
+                defaultValue={jsReady ? undefined : ''}
                 onChange={e => setPassword(e.target.value)}
                 required
                 minLength={8}
-                className="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/40 transition-colors duration-150"
+                className={inputClass}
               />
             </div>
-            <button type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full" disabled={loading}>
+            <button
+              type="submit"
+              disabled={loading}
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
+            >
               {loading ? 'Signing in...' : <><LogIn className="h-4 w-4" /> Sign In</>}
             </button>
           </form>
