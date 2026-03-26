@@ -2,14 +2,10 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useAuth } from '@/lib/auth-context'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Wallet, UserPlus } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
 export default function RegisterPage() {
-  const { register } = useAuth()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -32,12 +28,28 @@ export default function RegisterPage() {
     }
 
     setLoading(true)
-    const err = await register(email, password, name || undefined)
-    if (err) {
-      setError(err)
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name: name || undefined }),
+        credentials: 'include',
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Registration failed')
+        setLoading(false)
+        return
+      }
+      if (data.token) localStorage.setItem('auth_token', data.token)
+      window.location.href = '/dashboard'
+    } catch {
+      setError('Network error. Please try again.')
       setLoading(false)
     }
   }
+
+  const inputClass = "flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/40 transition-colors duration-150"
 
   return (
     <div className="w-full max-w-md animate-fade-in">
@@ -57,7 +69,7 @@ export default function RegisterPage() {
           <CardDescription>Start tracking your finances</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form action="#" method="POST" onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3 animate-fade-in">
                 {error}
@@ -65,49 +77,56 @@ export default function RegisterPage() {
             )}
             <div className="space-y-2">
               <label className="text-sm font-medium">Name</label>
-              <Input
+              <input
                 type="text"
+                name="name"
                 placeholder="Your name (optional)"
                 value={name}
                 onChange={e => setName(e.target.value)}
-                autoFocus
+                className={inputClass}
               />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Email</label>
-              <Input
+              <input
                 type="email"
+                name="email"
                 placeholder="you@example.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
+                className={inputClass}
               />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Password</label>
-              <Input
+              <input
                 type="password"
+                name="password"
                 placeholder="At least 8 characters"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
                 minLength={8}
+                className={inputClass}
               />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Confirm Password</label>
-              <Input
+              <input
                 type="password"
+                name="confirmPassword"
                 placeholder="Repeat your password"
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
                 required
                 minLength={8}
+                className={inputClass}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <button type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full" disabled={loading}>
               {loading ? 'Creating account...' : <><UserPlus className="h-4 w-4" /> Create Account</>}
-            </Button>
+            </button>
           </form>
           <p className="text-center text-sm text-muted-foreground mt-6">
             Already have an account?{' '}

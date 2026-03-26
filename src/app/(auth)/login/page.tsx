@@ -19,9 +19,23 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    const err = await login(email, password)
-    if (err) {
-      setError(err)
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include',
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Login failed')
+        setLoading(false)
+        return
+      }
+      if (data.token) localStorage.setItem('auth_token', data.token)
+      window.location.href = '/dashboard'
+    } catch {
+      setError('Network error. Please try again.')
       setLoading(false)
     }
   }
@@ -44,7 +58,7 @@ export default function LoginPage() {
           <CardDescription>Sign in to your account</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form action="#" method="POST" onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3 animate-fade-in">
                 {error}
@@ -52,29 +66,32 @@ export default function LoginPage() {
             )}
             <div className="space-y-2">
               <label className="text-sm font-medium">Email</label>
-              <Input
+              <input
                 type="email"
+                name="email"
                 placeholder="you@example.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
-                autoFocus
+                className="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/40 transition-colors duration-150"
               />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Password</label>
-              <Input
+              <input
                 type="password"
+                name="password"
                 placeholder="Enter your password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
                 minLength={8}
+                className="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/40 transition-colors duration-150"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <button type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full" disabled={loading}>
               {loading ? 'Signing in...' : <><LogIn className="h-4 w-4" /> Sign In</>}
-            </Button>
+            </button>
           </form>
           <p className="text-center text-sm text-muted-foreground mt-6">
             Don&apos;t have an account?{' '}
