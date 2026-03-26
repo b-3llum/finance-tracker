@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { jwtVerify } from 'jose'
 
-const PUBLIC_PATHS = ['/login', '/register', '/api/auth/login', '/api/auth/login-form', '/api/auth/register', '/api/auth/logout']
+const PUBLIC_PATHS = ['/login', '/register', '/api/auth/login', '/api/auth/login-form', '/api/auth/register', '/api/auth/register-form', '/api/auth/logout']
 const STATIC_PREFIXES = ['/_next', '/favicon.ico', '/sw.js', '/manifest.json', '/icons/']
 
 function getJwtSecret(): Uint8Array {
